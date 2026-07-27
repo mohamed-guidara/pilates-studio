@@ -19,6 +19,12 @@ class PaymentController extends Controller
 
     public function show(string $id)
     {
-        return Payment::find($id);
+        if (Payment::where('paymentId', $id)->exists()) {
+            return Payment::find($id);
+        } else {
+            return response()->json([
+                "message" => "Payment not found"
+            ], 404);
+        }
     }
 }

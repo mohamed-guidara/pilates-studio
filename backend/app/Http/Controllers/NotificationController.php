@@ -19,6 +19,12 @@ class NotificationController extends Controller
 
     public function show(string $id)
     {
-        return Notification::find($id);
+        if (Notification::where('notificationId', $id)->exists()) {
+            return Notification::find($id);
+        } else {
+            return response()->json([
+                "message" => "Notification not found"
+            ], 404);
+        }
     }
 }

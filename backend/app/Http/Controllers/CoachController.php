@@ -19,7 +19,13 @@ class CoachController extends Controller
 
     public function show(string $id)
     {
-        return Coach::find($id);
+        if (Coach::where('coachId', $id)->exists()) {
+            return Coach::find($id);
+        } else {
+            return response()->json([
+                "message" => "Coach not found"
+            ], 404);
+        }
     }
 
     public function update(Request $request, string $id)

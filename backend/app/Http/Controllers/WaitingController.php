@@ -19,7 +19,13 @@ class WaitingController extends Controller
 
     public function show(string $id)
     {
-        return Waiting::find($id);
+        if (Waiting::where('waitingId', $id)->exists()) {
+            return Waiting::find($id);
+        } else {
+            return response()->json([
+                "message" => "Waiting not found"
+            ], 404);
+        }
     }
 
     public function update(Request $request, string $id)

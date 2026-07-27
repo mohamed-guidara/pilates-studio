@@ -19,7 +19,13 @@ class RoomController extends Controller
 
     public function show(string $id)
     {
-        return Room::find($id);
+        if (Room::where('roomId', $id)->exists()) {
+            return Room::find($id);
+        } else {
+            return response()->json([
+                "message" => "Room not found"
+            ], 404);
+        }
     }
 
     public function update(Request $request, string $id)

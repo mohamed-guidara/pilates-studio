@@ -19,7 +19,13 @@ class SessionController extends Controller
 
     public function show(string $id)
     {
-        return Session::find($id);
+        if (Session::where('sessionId', $id)->exists()) {
+            return Session::find($id);
+        } else {
+            return response()->json([
+                "message" => "Session not found"
+            ], 404);
+        }
     }
 
     public function update(Request $request, string $id)

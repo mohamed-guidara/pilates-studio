@@ -19,7 +19,13 @@ class ClientController extends Controller
 
     public function show(string $id)
     {
-        return Client::find($id);
+        if (Client::where('clientId', $id)->exists()) {
+            return Client::find($id);
+        } else {
+            return response()->json([
+                "message" => "Client not found"
+            ], 404);
+        }
     }
 
     public function update(Request $request, string $id)

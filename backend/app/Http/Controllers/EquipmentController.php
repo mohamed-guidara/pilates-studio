@@ -19,7 +19,13 @@ class EquipmentController extends Controller
 
     public function show(string $id)
     {
-        return Equipment::find($id);
+        if (Equipment::where('equipmentId', $id)->exists()) {
+            return Equipment::find($id);
+        } else {
+            return response()->json([
+                "message" => "Equipment not found"
+            ], 404);
+        }
     }
 
     public function update(Request $request, string $id)

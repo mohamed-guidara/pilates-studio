@@ -28,7 +28,13 @@ class PersonController extends Controller
      */
     public function show(string $id)
     {
-        return Person::find($id);
+        if (Person::where('personId', $id)->exists()) {
+            return Person::find($id);
+        } else {
+            return response()->json([
+                "message" => "Person not found"
+            ], 404);
+        }
     }
 
     /**

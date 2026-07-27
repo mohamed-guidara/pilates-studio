@@ -19,7 +19,13 @@ class ReservationController extends Controller
 
     public function show(string $id)
     {
-        return Reservation::find($id);
+        if (Reservation::where('reservationId', $id)->exists()) {
+            return Reservation::find($id);
+        } else {
+            return response()->json([
+                "message" => "Reservation not found"
+            ], 404);
+        }
     }
 
     public function update(Request $request, string $id)
