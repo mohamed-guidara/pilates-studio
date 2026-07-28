@@ -1,10 +1,13 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 
-class Person extends Model
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
+
+class Person extends Authenticatable
 {
+    use HasApiTokens;
     public $timestamps = false;
 
     protected $table = 'persons';
@@ -20,6 +23,16 @@ class Person extends Model
     ];
 
     protected $hidden = ['password'];
+
+        public function coach()
+    {
+        return $this->hasOne(Coach::class, 'personID', 'personId');
+    }
+
+    public function client()
+    {
+        return $this->hasOne(Client::class, 'personID', 'personId');
+    }
 }
 
 ?>

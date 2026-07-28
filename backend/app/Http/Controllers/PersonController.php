@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Person;
+use Illuminate\Support\Facades\Hash;
 
 class PersonController extends Controller
 {
@@ -15,12 +16,38 @@ class PersonController extends Controller
         return Person::all();
     }
 
+    protected function rules($personId = null)
+    {
+        return [
+            'firstName' => 'required|string|max:255',
+            'lastName'  => 'required|string|max:255',
+            'birthDate' => 'required|date',
+            //email is unique unless it's the same user updating his data
+            'email'     => 'required|email|unique:persons,email,' . $personId . ',personId',
+            //on create password is required
+            //on update, password is optional (keep the old)
+            'password'  => $personId
+                ? 'nullable|string'
+                : 'required|string',
+        ];
+    }
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        return Person::create($request->all());
+
+        $validated = $request->validate($this->rules());
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        $person = Person::create($validated);
+
+        return response()->json([
+            'message' => 'Person created successfully',
+            'person'  => $person
+        ], 201);
     }
 
     /**
@@ -42,24 +69,28 @@ class PersonController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        if (Person::where('personId', $id)->exists()) {
-            $person = Person::find($id);
-            $person->firstName = $request->firstName;
-            $person->lastName  = $request->lastName;
-            $person->birthDate = $request->birthDate;
-            $person->email     = $request->email;
-            $person->password  = $request->password;
-
-            $person->save();
-
-            return response()->json([
-                "message" => "record updated successfully"
-            ], 200);
-        } else {
+        $person = Person::find($id);
+        if (!$person) {
             return response()->json([
                 "message" => "Person not found"
             ], 404);
         }
+
+
+        $validated = $request->validate($this->rules($id));
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']); // don’t overwrite with null
+        }
+
+        $person->update($validated); // fill + save
+
+        return response()->json([
+            "message" => "Record updated successfully",
+            "person"  => $person
+        ], 200);
     }
 
     /**
