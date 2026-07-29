@@ -48,17 +48,22 @@ class CoachController extends Controller
 
     public function destroy(string $id)
     {
-        if (Coach::where('coachId', $id)->exists()) {
-            $coach = Coach::find($id);
-            $coach->delete();
+        $coach = Coach::find($id);
 
-            return response()->json([
-                "message" => "record deleted"
-            ], 202);
-        } else {
-            return response()->json([
-                "message" => "Coach not found"
-            ], 404);
+        if (!$coach) {
+            return response()->json(["message" => "Coach not found"], 404);
         }
+
+        $person = $coach->person; // relationship
+
+        $coach->delete();
+
+        // If person has no coach, delete person too
+        if (!$person->client) {
+            $person->delete();
+        }
+
+        return response()->json([
+            "message" => "Coach deleted successfully"], 200);
     }
 }

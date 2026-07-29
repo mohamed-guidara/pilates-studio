@@ -48,17 +48,22 @@ class ClientController extends Controller
 
     public function destroy(string $id)
     {
-        if (Client::where('clientId', $id)->exists()) {
-            $client = Client::find($id);
-            $client->delete();
+        $client = Client::find($id);
 
-            return response()->json([
-                "message" => "record deleted"
-            ], 202);
-        } else {
-            return response()->json([
-                "message" => "Client not found"
-            ], 404);
+        if (!$client) {
+            return response()->json(["message" => "Client not found"], 404);
         }
+
+        $person = $client->person; // relationship
+
+        $client->delete();
+
+        // If person has no coach, delete person too
+        if (!$person->coach) {
+            $person->delete();
+        }
+
+        return response()->json([
+            "message" => "Client deleted successfully"], 200);
     }
 }
