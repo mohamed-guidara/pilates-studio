@@ -24,13 +24,12 @@ class AuthController extends Controller
             'level'    => 1, // default level, adjust as needed
         ]);
 
-        $token = $person->createToken('api-token')->plainTextToken;
-
+        $token = $person->createToken('api-token', ['client'])->plainTextToken;
         return response()->json([
             'message' => 'Client registered successfully',
             'person'  => $person,
             'token'   => $token,
-        ], 201);
+            ], 201);
 
     }
 
@@ -42,20 +41,16 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
-        $token = $person->createToken('api-token')->plainTextToken;
-
         // Collect roles
-        $role = '';
-        if ($person->client) {
-            $role = 'client';
-        }
         if ($person->coach) {
-            $role = $person->coach->isAdmin ? 'admin' : 'coach';
-        }
+            $role = $person->coach->isAdmin ? ['admin'] : ['coach', 'admin'];
+            } else{
+                $role = ['client'];
+                }
+        $token = $person->createToken('api-token', [$role])->plainTextToken;
 
         return response()->json([
             'token' => $token,
-            'role' => $role
         ]);
     }
 
