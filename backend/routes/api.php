@@ -47,9 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('payments', PaymentController::class)->only([
             'index', 'store', 'show'
             ]);
-
+        //I have to search how notifications are created adutomatically
         Route::apiResource('notifications', NotificationController::class)->only([
-            'index', 'store', 'show'
+            'index', 'show'
             ]);
 
     });
