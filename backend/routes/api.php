@@ -20,7 +20,9 @@ Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
-    Route::middleware('abilities:admin')->group(function () {
+        Route::apiResource('persons', PersonController::class);
+
+    // Route::middleware('abilities:admin')->group(function () {
         Route::apiResource('clients', ClientController::class);
         Route::apiResource('coaches', CoachController::class);
         Route::apiResource('rooms', RoomController::class);
@@ -29,24 +31,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('payments', PaymentController::class)->only([
             'index', 'store', 'show'
             ]);
-    });
+    // });
     // Coach routes
-    Route::middleware('abilities:coach')->group(function () {
-        Route::apiResource('clients', ClientController::class)->only([
-            'index', 'show', 'update']);
-
-            Route::apiResource('sessions', SessionController::class)->only([
-            'index', 'show']);
-    });
+    // Route::middleware('abilities:coach')->group(function () {
+    // });
 
     // Client routes
     Route::middleware('abilities:client')->group(function () {
         Route::apiResource('reservations', ReservationController::class);
         Route::apiResource('waitings', WaitingController::class);
 
-        Route::apiResource('payments', PaymentController::class)->only([
-            'index', 'store', 'show'
-            ]);
+
         //I have to search how notifications are created adutomatically
         Route::apiResource('notifications', NotificationController::class)->only([
             'index', 'show'

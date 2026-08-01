@@ -29,6 +29,7 @@ class AuthController extends Controller
             'message' => 'Client registered successfully',
             'person'  => $person,
             'token'   => $token,
+            'role'    => 'client'
             ], 201);
 
     }
@@ -43,14 +44,16 @@ class AuthController extends Controller
 
         // Collect roles
         if ($person->coach) {
-            $role = $person->coach->isAdmin ? ['admin'] : ['coach', 'admin'];
+            $role = $person->coach->isAdmin ? 'admin': 'coach';
             } else{
                 $role = ['client'];
                 }
-        $token = $person->createToken('api-token', [$role])->plainTextToken;
+        $token = $person->createToken('api-token')->plainTextToken;
+
 
         return response()->json([
             'token' => $token,
+            'role' => $role
         ]);
     }
 

@@ -26,12 +26,12 @@ class Person extends Authenticatable
 
         public function coach()
     {
-        return $this->hasOne(Coach::class, 'personID', 'personId');
+        return $this->hasOne(Coach::class, 'personId', 'personId');
     }
 
     public function client()
     {
-        return $this->hasOne(Client::class, 'personID', 'personId');
+        return $this->hasOne(Client::class, 'personId', 'personId');
     }
 }
 
