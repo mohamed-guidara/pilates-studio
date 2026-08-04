@@ -20,10 +20,20 @@ export class AuthService {
   }
 
   // Save token + role in localStorage
-  saveToken(token: string, role: string) {
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('user_role', role);
-  }
+  saveToken(token: string, role: string, person?: any) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', role);
+
+    if (person) {
+      localStorage.setItem('firstName', person.firstName);
+    }
+}
+
+getFirstName(): string | null {
+  return  localStorage.getItem('firstName');
+
+
+}
 
   // Check if user is logged in
   isLoggedIn(): boolean {

@@ -24,7 +24,7 @@ export class Login {
     this.auth.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.auth.saveToken(res.token, res.role);
+        this.auth.saveToken(res.token, res.role, res.person);
 
         // Redirect based on role
         if (res.role === 'admin') {
@@ -36,8 +36,8 @@ export class Login {
         }
       },
       error: (err) => {
-        alert('Login failed: ' + err.error.message);
         this.isLoading = false;
+        alert('Login failed: ' + err.error.message);
       }
     });
   }
