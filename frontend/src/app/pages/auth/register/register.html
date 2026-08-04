@@ -1,1 +1,68 @@
-<p>register works!</p>
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+  <form #registerForm="ngForm" (ngSubmit)="register()" class="bg-white p-8 rounded shadow-md w-96">
+
+    <div class="flex justify-start text-sm">
+      <a [routerLink]="['/']" class="inline-flex items-center font-medium text-blue-600 hover:text-blue-700">
+        <span>←</span>
+        <span class="ml-1">Back to home</span>
+      </a>
+    </div>
+
+    <h2 class="text-2xl font-bold mb-6 text-center">Register</h2>
+
+    <!-- First Name -->
+    <div class="mb-4">
+      <label class="block text-gray-700">First name</label>
+      <input type="text" name="name" [(ngModel)]="fname" required
+        class="w-full px-3 py-2 border rounded focus:outline-none focus:ring" />
+    </div>
+
+    <!-- Last Name -->
+    <div class="mb-4">
+      <label class="block text-gray-700">Last name</label>
+      <input type="text" name="name" [(ngModel)]="lname" required
+        class="w-full px-3 py-2 border rounded focus:outline-none focus:ring" />
+    </div>
+
+    <!-- Birthdate -->
+    <div class="mb-4">
+      <label class="block text-gray-700">Birthdate</label>
+      <input type="date" name="birthdate" [(ngModel)]="birthdate" required
+        class="w-full px-3 py-2 border rounded focus:outline-none focus:ring" />
+    </div>
+
+    <!-- Email -->
+    <div class="mb-4">
+      <label class="block text-gray-700">Email</label>
+      <input type="email" name="email" [(ngModel)]="email" required
+        class="w-full px-3 py-2 border rounded focus:outline-none focus:ring" />
+    </div>
+
+    <!-- Password -->
+    <div class="mb-4">
+      <label class="block text-gray-700">Password</label>
+      <input type="password" name="password" [(ngModel)]="password" required
+        class="w-full px-3 py-2 border rounded focus:outline-none focus:ring" />
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="mb-6">
+      <label class="block text-gray-700">Confirm Password</label>
+      <input type="password" name="confirmPassword" [(ngModel)]="confirmPassword" required
+        class="w-full px-3 py-2 border rounded focus:outline-none focus:ring" />
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" [disabled]="registerForm.invalid"
+      class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+      Register
+    </button>
+
+    <div class="mt-4 text-center text-sm text-gray-600">
+      <span>Already have an account?</span>
+      <a [routerLink]="['/login']" class="ml-1 font-medium text-blue-600 hover:text-blue-700">
+        Log in
+      </a>
+    </div>
+  </form>
+</div>

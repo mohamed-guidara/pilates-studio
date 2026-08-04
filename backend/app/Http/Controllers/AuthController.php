@@ -46,7 +46,7 @@ class AuthController extends Controller
         if ($person->coach) {
             $role = $person->coach->isAdmin ? 'admin': 'coach';
             } else{
-                $role = ['client'];
+                $role = 'client';
                 }
         $token = $person->createToken('api-token')->plainTextToken;
 
