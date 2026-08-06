@@ -16,7 +16,9 @@ export class Login {
   password: string = '';
   isLoading: boolean = false;
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router
+
+  ) {}
 
   login() {
     this.isLoading = true;
@@ -27,17 +29,22 @@ export class Login {
         this.auth.saveToken(res.token, res.role, res.person);
 
         // Redirect based on role
-        if (res.role === 'admin') {
-          this.router.navigate(['/admin']);
-        } else if (res.role === 'coach') {
-          this.router.navigate(['/coach']);
-        } else {
-          this.router.navigate(['/client']);
+        switch (res.role) {
+          case 'admin':
+            this.router.navigate(['/admin']);
+            break;
+          case 'coach':
+            this.router.navigate(['/coach']);
+            break;
+          default:
+            this.router.navigate(['/client']);
+            break;
         }
       },
       error: (err) => {
         this.isLoading = false;
-        alert('Login failed: ' + err.error.message);
+        alert('Login failed: ' + err.error.error);
+        console.log(' isloadning: ' +this.isLoading)
       }
     });
   }
