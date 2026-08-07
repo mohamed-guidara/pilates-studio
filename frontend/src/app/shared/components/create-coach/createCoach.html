@@ -1,0 +1,48 @@
+@if (show()) {
+<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+    <h2 class="text-lg font-semibold mb-4">Create Coach</h2>
+
+    <form (ngSubmit)="saveNewCoach()">
+      @if (apiError()) {
+        <div class="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {{ apiError() }}
+        </div>
+      }
+
+      <label>First Name</label>
+      <input type="text" [(ngModel)]="newCoach.firstName" name="firstName" required
+        class="w-full border rounded px-2 py-1 mb-4" />
+
+      <label>Last Name</label>
+      <input type="text" [(ngModel)]="newCoach.lastName" name="lastName" required class="w-full border rounded px-2 py-1 mb-4" />
+
+      <label>Birth Date</label>
+      <input type="date" [(ngModel)]="newCoach.birthDate" name="birthDate" required
+        class="w-full border rounded px-2 py-1 mb-4" />
+
+      <label>Email</label>
+      <input type="email" [(ngModel)]="newCoach.email" name="email" required class="w-full border rounded px-2 py-1 mb-4" />
+
+      <label>Password</label>
+      <input type="password" [(ngModel)]="newCoach.password" name="password" required
+        class="w-full border rounded px-2 py-1 mb-4" />
+
+      <label>Role</label>
+      <select [(ngModel)]="newCoach.isAdmin" name="isAdmin" class="w-full border rounded px-2 py-1 mb-4">
+        <option [value]="1">Admin</option>
+        <option [value]="0">Coach</option>
+      </select>
+
+      <div class="flex justify-end gap-2">
+        <button type="button" (click)="closeCreateModal()" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">
+          Cancel
+        </button>
+        <button type="submit" class="px-3 py-1 rounded bg-green-500 text-white hover:bg-green-600">
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}

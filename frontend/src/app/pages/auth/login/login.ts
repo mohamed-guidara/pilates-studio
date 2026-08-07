@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -14,18 +14,18 @@ import { AuthService } from '../../../core/auth';
 export class Login {
   email: string = '';
   password: string = '';
-  isLoading: boolean = false;
+  isLoading = signal(false);
 
   constructor(private auth: AuthService, private router: Router
 
   ) {}
 
   login() {
-    this.isLoading = true;
+    this.isLoading.set(true);
 
     this.auth.login({ email: this.email, password: this.password }).subscribe({
       next: (res) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.auth.saveToken(res.token, res.role, res.person);
 
         // Redirect based on role
@@ -42,7 +42,7 @@ export class Login {
         }
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         alert('Login failed: ' + err.error.error);
         console.log(' isloadning: ' +this.isLoading)
       }

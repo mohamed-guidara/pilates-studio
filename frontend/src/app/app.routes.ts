@@ -11,6 +11,7 @@ import { Equipments } from './pages/admin/equipments/equipments';
 import { Sessions } from './pages/admin/sessions/sessions';
 import { WelcomePage } from './pages/admin/welcome-page/welcome-page';
 import { Clients } from './pages/admin/clients/clients';
+import { CreateCoach } from './shared/components/create-coach/create-coach';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -21,7 +22,11 @@ export const routes: Routes = [
     component: AdminDashboard,
     children: [
       { path: '', component: WelcomePage },
-      { path: 'coaches', component: Coaches },
+      { path: 'coaches', component: Coaches,
+      },
+
+          // { path: 'coaches/create', component: CreateCoach},
+
       { path: 'rooms', component: Rooms },
       { path: 'equipments', component: Equipments },
       { path: 'sessions', component: Sessions },
