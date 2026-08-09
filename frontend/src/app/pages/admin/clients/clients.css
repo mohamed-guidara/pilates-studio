@@ -1,0 +1,10 @@
+/* Clients admin page styling */
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  vertical-align: top;
+}

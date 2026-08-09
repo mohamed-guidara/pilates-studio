@@ -13,6 +13,9 @@ import { WelcomePage } from './pages/admin/welcome-page/welcome-page';
 import { Clients } from './pages/admin/clients/clients';
 import { CreateCoach } from './shared/components/create-coach/create-coach';
 import { UpdateCoach } from './shared/components/update-coach/update-coach';
+import { UpdateRoom } from './shared/components/update-room/update-room';
+import { UpdateEquipment } from './shared/components/update-equipment/update-equipment';
+import { UpdateClient } from './shared/components/update-client/update-client';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -33,9 +36,12 @@ export const routes: Routes = [
           // { path: 'coaches/create', component: CreateCoach},
 
       { path: 'rooms', component: Rooms },
+      { path: 'rooms/update/:id', component: UpdateRoom },
       { path: 'equipments', component: Equipments },
+      { path: 'equipments/update/:id', component: UpdateEquipment },
       { path: 'sessions', component: Sessions },
       { path: 'clients', component: Clients },
+      { path: 'clients/update/:id', component: UpdateClient },
 
     ],
   },

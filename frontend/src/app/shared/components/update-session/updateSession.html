@@ -1,0 +1,99 @@
+@if (session()) {
+  <div class="max-w-lg mx-auto bg-white shadow rounded p-6">
+    <h2 class="text-lg font-semibold mb-4 text-gray-800">Update Session</h2>
+
+    @if (pageErrorMessage()) {
+      <feedback-message [message]="pageErrorMessage()" type="error"></feedback-message>
+    } @else if (successMessage()) {
+      <feedback-message [message]="successMessage()" type="success"></feedback-message>
+    }
+
+    <form (ngSubmit)="saveSession()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Coach ID</label>
+        <input type="number"
+               [ngModel]="session()!.coachId"
+               (ngModelChange)="updateSessionField('coachId', $event)"
+               name="coachId"
+               min="1"
+               class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-300" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Room ID</label>
+        <input type="number"
+               [ngModel]="session()!.roomId"
+               (ngModelChange)="updateSessionField('roomId', $event)"
+               name="roomId"
+               min="1"
+               class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-300" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Level</label>
+        <input type="text"
+               [ngModel]="session()!.level"
+               (ngModelChange)="updateSessionField('level', $event)"
+               name="level"
+               class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-300" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <input type="date"
+                 [ngModel]="session()!.date"
+                 (ngModelChange)="updateSessionField('date', $event)"
+                 name="date"
+                 class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-300" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Places</label>
+          <input type="number"
+                 [ngModel]="session()!.places"
+                 (ngModelChange)="updateSessionField('places', $event)"
+                 name="places"
+                 min="1"
+                 class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-300" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+          <input type="time"
+                 [ngModel]="session()!.startTime"
+                 (ngModelChange)="updateSessionField('startTime', $event)"
+                 name="startTime"
+                 class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-300" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+          <input type="time"
+                 [ngModel]="session()!.endTime"
+                 (ngModelChange)="updateSessionField('endTime', $event)"
+                 name="endTime"
+                 class="w-full border rounded px-3 py-2 focus:ring focus:ring-blue-300" />
+        </div>
+      </div>
+
+      <div class="flex justify-between space-x-4 pt-4">
+        <button type="button"
+                routerLink="/admin/sessions"
+                class="cursor-pointer flex-1 px-4 py-2 rounded bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 focus:ring focus:ring-gray-400">
+          Cancel
+        </button>
+        <button type="submit"
+                class="cursor-pointer flex-1 px-4 py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 focus:ring focus:ring-blue-300">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+} @else {
+  <div class="text-center p-6 text-gray-600">
+    <p>Please wait, loading session data...</p>
+  </div>
+}

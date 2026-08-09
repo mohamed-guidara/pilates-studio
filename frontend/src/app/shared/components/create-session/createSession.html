@@ -1,0 +1,66 @@
+@if (show()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-xl transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-2xl transition-all">
+    <h2 class="text-xl font-bold mb-5 text-gray-800">Create Session</h2>
+
+    <form (ngSubmit)="saveNewSession()" class="max-h-[80vh] overflow-y-auto pr-2 space-y-4">
+      @if (apiError()) {
+        <feedback-message [message]="apiError()" type="error"></feedback-message>
+      }
+
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">Coach ID</label>
+        <input type="number" [(ngModel)]="newSession.coachId" name="coachId" min="1" required
+               class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+      </div>
+
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">Room ID</label>
+        <input type="number" [(ngModel)]="newSession.roomId" name="roomId" min="1" required
+               class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+      </div>
+
+      <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">Level</label>
+        <input type="text" [(ngModel)]="newSession.level" name="level" required
+               class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Date</label>
+          <input type="date" [(ngModel)]="newSession.date" name="date" required
+                 class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Places</label>
+          <input type="number" [(ngModel)]="newSession.places" name="places" min="1" required
+                 class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Start Time</label>
+          <input type="time" [(ngModel)]="newSession.startTime" name="startTime" required
+                 class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">End Time</label>
+          <input type="time" [(ngModel)]="newSession.endTime" name="endTime" required
+                 class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeCreateModal()" class="px-4 py-2 rounded-md bg-gray-200 font-medium text-gray-700 transition-colors hover:bg-gray-300">
+          Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 rounded-md bg-green-500 font-medium text-white transition-colors hover:bg-green-600 shadow-sm">
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
