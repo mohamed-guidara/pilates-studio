@@ -1,48 +1,82 @@
 @if (show()) {
-<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-  <div class="bg-white rounded-lg shadow-lg w-96 p-6">
-    <h2 class="text-lg font-semibold mb-4">Create Coach</h2>
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-md transform overflow-hidden rounded-xl bg-white p-6 text-left align-middle shadow-2xl transition-all">
+    <h2 class="text-xl font-bold mb-5 text-gray-800">Create Coach</h2>
 
-    <form (ngSubmit)="saveNewCoach()">
+    <form (ngSubmit)="saveNewCoach()" class="max-h-[80vh] overflow-y-auto pr-2">
       @if (apiError()) {
-        <div class="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ apiError() }}
         </div>
       }
 
-      <label>First Name</label>
+      <label class="block mb-1 text-sm font-medium text-gray-700">First Name</label>
       <input type="text" [(ngModel)]="newCoach.firstName" name="firstName" required
-        class="w-full border rounded px-2 py-1 mb-4" />
+        class="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
 
-      <label>Last Name</label>
-      <input type="text" [(ngModel)]="newCoach.lastName" name="lastName" required class="w-full border rounded px-2 py-1 mb-4" />
+      <label class="block mb-1 text-sm font-medium text-gray-700">Last Name</label>
+      <input type="text" [(ngModel)]="newCoach.lastName" name="lastName" required
+        class="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
 
-      <label>Birth Date</label>
+      <label class="block mb-1 text-sm font-medium text-gray-700">Birth Date</label>
       <input type="date" [(ngModel)]="newCoach.birthDate" name="birthDate" required
-        class="w-full border rounded px-2 py-1 mb-4" />
+        class="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
 
-      <label>Email</label>
-      <input type="email" [(ngModel)]="newCoach.email" name="email" required class="w-full border rounded px-2 py-1 mb-4" />
+      <label class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+      <input type="email" [(ngModel)]="newCoach.email" name="email" required
+        class="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
 
-      <label>Password</label>
-      <input type="password" [(ngModel)]="newCoach.password" name="password" required
-        class="w-full border rounded px-2 py-1 mb-4" />
+<label class="block mb-1 text-sm font-medium text-gray-700">Password</label>
+<div class="relative mb-4">
+  <input
+    [type]="showPassword.checked ? 'text' : 'password'"
+    [(ngModel)]="newCoach.password"
+    name="password"
+    required
+    class="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+  />
+  <input type="checkbox" #showPassword class="hidden" />
 
-      <label>Role</label>
-      <select [(ngModel)]="newCoach.isAdmin" name="isAdmin" class="w-full border rounded px-2 py-1 mb-4">
-        <option [value]="1">Admin</option>
-        <option [value]="0">Coach</option>
-      </select>
-
-      <div class="flex justify-end gap-2">
-        <button type="button" (click)="closeCreateModal()" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">
-          Cancel
-        </button>
-        <button type="submit" class="px-3 py-1 rounded bg-green-500 text-white hover:bg-green-600">
-          Create
-        </button>
+  <button
+    type="button"
+    (click)="showPassword.checked = !showPassword.checked"
+    tabindex="-1"
+    class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer focus:outline-none"
+  >
+    <!-- Eye-off icon -->
+    <svg [class.hidden]="!showPassword.checked" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-gray-500 hover:text-gray-700">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+    </svg>
+    <!-- Eye-open icon -->
+    <svg [class.hidden]="showPassword.checked" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-gray-500 hover:text-gray-700">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  </button>
+</div>
+      <div class="flex items-center mb-6 mt-4">
+        <input
+          type="checkbox"
+          [ngModel]="newCoach.isAdmin == 1"
+          (ngModelChange)="newCoach.isAdmin = $event ? 1 : 0"
+          name="isAdmin"
+          id="isAdminCheckbox"
+          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+        />
+        <label for="isAdminCheckbox" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer">
+          Admin
+        </label>
       </div>
+
     </form>
+    <div class="flex justify-end gap-3 pt-2">
+      <button type="button" (click)="closeCreateModal()" class="px-4 py-2 rounded-md bg-gray-200 font-medium text-gray-700 transition-colors hover:bg-gray-300">
+        Cancel
+      </button>
+      <button type="submit" class="px-4 py-2 rounded-md bg-green-500 font-medium text-white transition-colors hover:bg-green-600 shadow-sm">
+        Create
+      </button>
+    </div>
   </div>
 </div>
 }

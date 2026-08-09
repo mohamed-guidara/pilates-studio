@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { CoachService } from '../../../services/coachService.service';
 import { PersonsService } from '../../../services/personService.service';
@@ -15,7 +15,7 @@ import { CreateCoach } from "../../../shared/components/create-coach/create-coac
 @Component({
   selector: 'app-coaches',
   standalone: true,
-  imports: [CommonModule, CreateCoach],
+  imports: [CommonModule, CreateCoach, RouterLink],
   templateUrl: './coaches.html',
   styleUrls: ['./coaches.css']
 })
@@ -76,12 +76,9 @@ export class Coaches implements OnInit {
     this.showCreateModal.set(false);
   }
 
-  editCoach(coachId: number) {
-    this.router.navigate([`/admin/coaches/${coachId}/edit`]);
-
-  }
-
   handleCreate(newCoach: { firstName: string; lastName: string; birthDate: string; email: string; password: string; isAdmin: number }) {
+
+
     this.createErrorMessage.set(null);
 
     this.personsService.createPerson({

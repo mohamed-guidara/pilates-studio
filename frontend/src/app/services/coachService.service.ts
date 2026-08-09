@@ -27,8 +27,8 @@ export class CoachService {
   }
 
   // UPDATE
-  updateCoach(id: number, coach: Partial<Coach>): Observable<Coach> {
-    return this.http.put<Coach>(`${this.apiUrl}/${id}`, coach);
+  updateCoach(id: number, data:{ personId: number,isAdmin:number}): Observable<Coach> {
+    return this.http.put<Coach>(`${this.apiUrl}/${id}`, data);
   }
 
   // DELETE

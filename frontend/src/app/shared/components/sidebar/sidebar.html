@@ -1,6 +1,6 @@
-<div class="flex min-h-screen">
+<div class="flex">
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-gray-100 border-r border-gray-300 flex flex-col justify-between">
+  <aside class="fixed top-0 left-0 h-screen w-64 bg-gray-100 border-r border-gray-300 flex flex-col justify-between">
     <div>
       <div class="p-4 text-xl font-bold text-blue-600">
         <a routerLink="/admin">Dashboard Panel</a>
@@ -9,12 +9,12 @@
       <nav class="p-2 space-y-1">
         <ng-container>
           @for (item of navItems; track $index) {
-
-            <a  [routerLink]="item.to" routerLinkActive="bg-blue-600 text-white border-blue-600"
-            class="p-3 rounded-lg transition-all duration-200 flex items-center gap-2 border-l-4 border-transparent hover:bg-blue-100 hover:border-blue-400">
-            {{ item.label }}
-          </a>
-        }
+            <a [routerLink]="item.to"
+               routerLinkActive="bg-blue-600 text-white border-blue-600"
+               class="p-3 rounded-lg transition-all duration-200 flex items-center gap-2 border-l-4 border-transparent hover:bg-blue-100 hover:border-blue-400">
+              {{ item.label }}
+            </a>
+          }
         </ng-container>
       </nav>
     </div>
@@ -24,4 +24,9 @@
       Log Out
     </button>
   </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 ml-64 min-h-screen">
+    <!-- your routed content -->
+  </main>
 </div>

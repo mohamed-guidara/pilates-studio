@@ -12,18 +12,23 @@ import { Sessions } from './pages/admin/sessions/sessions';
 import { WelcomePage } from './pages/admin/welcome-page/welcome-page';
 import { Clients } from './pages/admin/clients/clients';
 import { CreateCoach } from './shared/components/create-coach/create-coach';
+import { UpdateCoach } from './shared/components/update-coach/update-coach';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   {
-    path: 'admin',
-    component: AdminDashboard,
-    children: [
-      { path: '', component: WelcomePage },
-      { path: 'coaches', component: Coaches,
-      },
+
+  path: 'admin',
+  component: AdminDashboard,
+  children: [
+    { path: '', component: WelcomePage },
+    { path: 'coaches', component: Coaches },
+    { path: 'coaches/update/:id', component: UpdateCoach }, // ✅ sibling route
+
+
+
 
           // { path: 'coaches/create', component: CreateCoach},
 
