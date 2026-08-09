@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 import { CoachService } from '../../../services/coachService.service';
 import { PersonsService } from '../../../services/personService.service';
 import { Coach } from '../../../shared/models/coach.model';
 import { Person } from '../../../shared/models/person.model';
 import { CreateCoach } from "../../../shared/components/create-coach/create-coach";
+import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
 
 
 
@@ -15,7 +16,7 @@ import { CreateCoach } from "../../../shared/components/create-coach/create-coac
 @Component({
   selector: 'app-coaches',
   standalone: true,
-  imports: [CommonModule, CreateCoach, RouterLink],
+  imports: [CommonModule, CreateCoach, RouterLink, FeedbackMessage],
   templateUrl: './coaches.html',
   styleUrls: ['./coaches.css']
 })
@@ -23,23 +24,37 @@ export class Coaches implements OnInit {
   isLoading = signal(true);
   coaches = signal<(Coach & { person?: Person })[]>([]);
 
-
   showCreateModal = signal(false);
   createErrorMessage = signal<string | null>(null);
-
+  pageErrorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private coachesService: CoachService,
     private personsService: PersonsService,
     private cdr: ChangeDetectorRef
   ) {}
 
+  closeCreateModal() {
+    this.createErrorMessage.set(null);
+    this.pageErrorMessage.set(null);
+    this.showCreateModal.set(false);
+  }
+
   ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      if (params['success']) {
+        this.successMessage.set(params['success']);
+      }
+    });
+
     this.loadCoaches();
   }
 
   loadCoaches() {
+    this.pageErrorMessage.set(null);
     this.isLoading.set(true);
 
     forkJoin({
@@ -61,6 +76,7 @@ export class Coaches implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load coaches. Please refresh the page.');
         console.error('Error loading coaches:', err);
         this.cdr.detectChanges();
       }
@@ -71,15 +87,15 @@ export class Coaches implements OnInit {
     this.showCreateModal.set(true);
   }
 
-  closeCreateModal() {
-    this.createErrorMessage.set(null);
-    this.showCreateModal.set(false);
-  }
+  // closeCreateModal() {
+  //   this.createErrorMessage.set(null);
+  //   this.showCreateModal.set(false);
+  // }
 
   handleCreate(newCoach: { firstName: string; lastName: string; birthDate: string; email: string; password: string; isAdmin: number }) {
-
-
+    this.pageErrorMessage.set(null);
     this.createErrorMessage.set(null);
+    this.successMessage.set(null);
 
     this.personsService.createPerson({
       firstName: newCoach.firstName,
@@ -89,14 +105,13 @@ export class Coaches implements OnInit {
       password: newCoach.password
     }).subscribe({
       next: (res) => {
-        console.log('person :>> ', res);
         this.coachesService.createCoach({
           personId: res.person.personId,
           isAdmin: newCoach.isAdmin
         }).subscribe({
           next: () => {
             this.showCreateModal.set(false);
-            console.log('coach created successfully!!!')
+            this.successMessage.set('Coach created successfully.');
             this.loadCoaches();
           },
           error: (err) => {
@@ -113,7 +128,7 @@ export class Coaches implements OnInit {
   }
 
   private extractErrorMessage(err: any): string {
-    const message = err?.error?.message;
+    const message = err?.error?.message || err?.message;
     const errors = err?.error?.errors;
 
     if (typeof message === 'string' && message) {
@@ -127,7 +142,7 @@ export class Coaches implements OnInit {
         .join(' ');
     }
 
-    return '';
+    return err?.statusText || '';
   }
 
 

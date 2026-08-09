@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FeedbackMessage } from '../feedback-message/feedback-message';
 
 @Component({
   selector: 'create-coach-modal',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, FeedbackMessage],
   templateUrl: './createCoach.html',
 })
 export class CreateCoach {
@@ -29,6 +30,7 @@ export class CreateCoach {
     birthDate: '',
     isAdmin: 0
   };
+  isLoading = signal(false)
 
   saveNewCoach() {
     const payload = {
@@ -46,6 +48,7 @@ export class CreateCoach {
     }
 
     this.apiError.set(null);
+    this.isLoading.set(true);
     this.save.emit(payload);
   }
 
