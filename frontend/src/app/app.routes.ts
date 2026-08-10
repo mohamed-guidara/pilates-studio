@@ -16,39 +16,29 @@ import { UpdateCoach } from './shared/components/update-coach/update-coach';
 import { UpdateRoom } from './shared/components/update-room/update-room';
 import { UpdateEquipment } from './shared/components/update-equipment/update-equipment';
 import { UpdateClient } from './shared/components/update-client/update-client';
+import { UpdateSession } from './shared/components/update-session/update-session';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   {
-
-  path: 'admin',
-  component: AdminDashboard,
-  children: [
-    { path: '', component: WelcomePage },
-    { path: 'coaches', component: Coaches },
-    { path: 'coaches/update/:id', component: UpdateCoach }, // ✅ sibling route
-
-
-
-
-          // { path: 'coaches/create', component: CreateCoach},
-
+    path: 'admin',
+    component: AdminDashboard,
+    children: [
+      { path: '', component: WelcomePage },
+      { path: 'coaches', component: Coaches },
+      { path: 'coaches/update/:id', component: UpdateCoach }, 
       { path: 'rooms', component: Rooms },
       { path: 'rooms/update/:id', component: UpdateRoom },
       { path: 'equipments', component: Equipments },
       { path: 'equipments/update/:id', component: UpdateEquipment },
       { path: 'sessions', component: Sessions },
+      { path: 'sessions/update/:id', component: UpdateSession },
       { path: 'clients', component: Clients },
       { path: 'clients/update/:id', component: UpdateClient },
-
     ],
   },
   { path: 'coach', component: CoachDashboard },
   { path: 'client', component: ClientDashboard },
-  // {path: 'admin/coaches', component: Coaches},
-  // {path: 'admin/rooms', component: Rooms},
-  // {path: 'admin/equipments', component: Equipments},
-  // {path: 'admin/clients', component: Coaches}
 ];

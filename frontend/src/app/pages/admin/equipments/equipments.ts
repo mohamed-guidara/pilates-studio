@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { Equipment } from '../../../shared/models/equipment.model';
+import { Room } from '../../../shared/models/room.model';
 import { EquipmentService } from '../../../services/equipmentService.service';
+import { RoomService } from '../../../services/roomService.service';
 import { CreateEquipment } from '../../../shared/components/create-equipment/create-equipment';
 import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
 
@@ -16,17 +18,19 @@ import { FeedbackMessage } from '../../../shared/components/feedback-message/fee
 })
 export class Equipments implements OnInit {
   isLoading = signal(true);
-  equipments = signal<Equipment[]>([]);
+  equipments = signal<(Equipment & { room?: Room })[]>([]);
 
   showCreateModal = signal(false);
   createErrorMessage = signal<string | null>(null);
   pageErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
+  rooms = signal<Room[]>([]);
 
   constructor(
     private router: Router,
     private equipmentService: EquipmentService,
-    private cdr: ChangeDetectorRef
+    private roomService: RoomService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -37,22 +41,35 @@ export class Equipments implements OnInit {
     this.pageErrorMessage.set(null);
     this.isLoading.set(true);
 
-    this.equipmentService.getEquipments().pipe(
-      finalize(() => {
-        this.isLoading.set(false);
-        this.cdr.detectChanges();
-      })
-    ).subscribe({
-      next: (equipments) => {
-        this.equipments.set(equipments);
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load equipments. Please refresh the page.');
-        console.error('Error loading equipments:', err);
-        this.cdr.detectChanges();
-      }
-    });
+    forkJoin({
+      equipments: this.equipmentService.getEquipments(),
+      rooms: this.roomService.getRooms(),
+    })
+      .pipe(
+        finalize(() => {
+          this.isLoading.set(false);
+          this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+        next: ({ equipments, rooms }) => {
+          this.rooms.set(rooms);
+          this.equipments.set(
+            equipments.map((equipment) => ({
+              ...equipment,
+              room: rooms.find((room) => room.roomId === equipment.roomId),
+            })),
+          );
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.pageErrorMessage.set(
+            this.extractErrorMessage(err) || 'Unable to load equipments. Please refresh the page.',
+          );
+          console.error('Error loading equipments:', err);
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   createEquipment() {
@@ -64,7 +81,12 @@ export class Equipments implements OnInit {
     this.showCreateModal.set(false);
   }
 
-  handleCreate(newEquipment: { roomId: number; name: string; description: string; isAvailable: number }) {
+  handleCreate(newEquipment: {
+    roomId: number;
+    name: string;
+    description: string;
+    isAvailable: number;
+  }) {
     this.createErrorMessage.set(null);
     this.pageErrorMessage.set(null);
     this.successMessage.set(null);
@@ -76,9 +98,11 @@ export class Equipments implements OnInit {
         this.loadEquipments();
       },
       error: (err) => {
-        this.createErrorMessage.set(this.extractErrorMessage(err) || 'Could not create equipment. Please try again.');
+        this.createErrorMessage.set(
+          this.extractErrorMessage(err) || 'Could not create equipment. Please try again.',
+        );
         console.error('Error creating equipment:', err);
-      }
+      },
     });
   }
 
@@ -93,9 +117,11 @@ export class Equipments implements OnInit {
         this.loadEquipments();
       },
       error: (err) => {
-        this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Could not delete equipment. Please try again.');
+        this.pageErrorMessage.set(
+          this.extractErrorMessage(err) || 'Could not delete equipment. Please try again.',
+        );
         console.error('Error deleting equipment:', err);
-      }
+      },
     });
   }
 
@@ -109,7 +135,7 @@ export class Equipments implements OnInit {
 
     if (errors && typeof errors === 'object') {
       return Object.values(errors)
-        .flatMap((value) => Array.isArray(value) ? value : [value])
+        .flatMap((value) => (Array.isArray(value) ? value : [value]))
         .filter((value): value is string => typeof value === 'string')
         .join(' ');
     }
@@ -117,4 +143,3 @@ export class Equipments implements OnInit {
     return err?.statusText || 'An unexpected error occurred.';
   }
 }
-

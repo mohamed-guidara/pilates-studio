@@ -1,9 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { SessionService } from '../../../services/sessionService.service';
+import { CoachService } from '../../../services/coachService.service';
+import { PersonsService } from '../../../services/personService.service';
+import { RoomService } from '../../../services/roomService.service';
 import { Session } from '../../../shared/models/session.model';
+import { Coach } from '../../../shared/models/coach.model';
+import { Person } from '../../../shared/models/person.model';
+import { Room } from '../../../shared/models/room.model';
 import { CreateSession } from '../../../shared/components/create-session/create-session';
 import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
 
@@ -16,8 +22,9 @@ import { FeedbackMessage } from '../../../shared/components/feedback-message/fee
 })
 export class Sessions implements OnInit {
   isLoading = signal(true);
-  sessions = signal<Session[]>([]);
-
+  sessions = signal<(Session & { coachName?: string; roomNumber?: string })[]>([]);
+  coachOptions = signal<{ coachId: number; fullName: string }[]>([]);
+  rooms = signal<Room[]>([]);
   showCreateModal = signal(false);
   createErrorMessage = signal<string | null>(null);
   pageErrorMessage = signal<string | null>(null);
@@ -27,11 +34,12 @@ export class Sessions implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private sessionService: SessionService,
-    private cdr: ChangeDetectorRef,
+    private coachService: CoachService,
+    private personsService: PersonsService,
+    private roomService: RoomService,
   ) {}
 
   ngOnInit() {
-    // Pick up success message redirected from UpdateSession (queryParams.success)
     const redirectSuccess = this.route.snapshot.queryParamMap.get('success');
     if (redirectSuccess) {
       this.successMessage.set(redirectSuccess);
@@ -49,20 +57,44 @@ export class Sessions implements OnInit {
     this.pageErrorMessage.set(null);
     this.isLoading.set(true);
 
-    this.sessionService.getSessions().pipe(
+    forkJoin({
+      sessions: this.sessionService.getSessions(),
+      coaches: this.coachService.getCoaches(),
+      persons: this.personsService.getPersons(),
+      rooms: this.roomService.getRooms(),
+    }).pipe(
       finalize(() => {
         this.isLoading.set(false);
-        this.cdr.detectChanges();
       })
     ).subscribe({
-      next: (sessions) => {
-        this.sessions.set(sessions);
-        this.cdr.detectChanges();
+      next: ({ sessions, coaches, persons, rooms }) => {
+        this.rooms.set(rooms);
+        this.coachOptions.set( 
+          coaches.map((coach) => {
+            const person = persons.find((p) => p.personId === coach.personId);
+            return {
+              coachId: coach.coachId,
+              fullName: person ? `${person.firstName} ${person.lastName}` : `Coach #${coach.coachId}`,
+            };
+          })
+        );
+        this.sessions.set(
+          sessions.map((session) => {
+            const coach = coaches.find((c) => c.coachId === session.coachId);
+            const person = coach ? persons.find((p) => p.personId === coach.personId) : undefined;
+            const room = rooms.find((r) => r.roomId === session.roomId);
+
+            return {
+              ...session,
+              coachName: person ? `${person.firstName} ${person.lastName}` : undefined,
+              roomNumber: room?.number,
+            };
+          })
+        );
       },
       error: (err) => {
         this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load sessions. Please refresh the page.');
         console.error('Error loading sessions:', err);
-        this.cdr.detectChanges();
       }
     });
   }

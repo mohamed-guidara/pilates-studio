@@ -53,11 +53,11 @@
     </div>
 
     <!-- Submit -->
-    <button type="submit" [disabled]="registerForm.invalid"
+    <button type="submit" [disabled]="isLoading() || registerForm.invalid"
       class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-      Register
+      {{isLoading() ? "Register...": "Register" }}
     </button>
-
+    
     <div class="mt-4 text-center text-sm text-gray-600">
       <span>Already have an account?</span>
       <a [routerLink]="['/login']" class="ml-1 font-medium text-blue-600 hover:text-blue-700">

@@ -1,12 +1,12 @@
 <div class="relative overflow-hidden bg-gray-50 shadow rounded-xl border border-gray-200">
   @if (pageErrorMessage()) {
-    <div class="p-5">
-      <feedback-message [message]="pageErrorMessage()" type="error"></feedback-message>
-    </div>
+  <div class="p-5">
+    <feedback-message [message]="pageErrorMessage()" type="error"></feedback-message>
+  </div>
   } @else if (successMessage()) {
-    <div class="p-5">
-      <feedback-message [message]="successMessage()" type="success"></feedback-message>
-    </div>
+  <div class="p-5">
+    <feedback-message [message]="successMessage()" type="success"></feedback-message>
+  </div>
   }
 
   <table class="w-full text-sm text-left border-collapse">
@@ -42,49 +42,48 @@
 
     <tbody>
       @if (isLoading()) {
-        <tr>
-          <td colspan="8" class="py-10">
-            <div class="flex justify-center items-center">
-              <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          </td>
-        </tr>
+      <tr>
+        <td colspan="8" class="py-10">
+          <div class="flex justify-center items-center">
+            <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </td>
+      </tr>
       } @else {
-        @for (session of sessions(); track session.sessionId) {
-          <tr class="border-t border-gray-200">
-            <td class="px-6 py-3">{{ session.sessionId }}</td>
-            <td class="px-6 py-3">{{ session.level }}</td>
-            <td class="px-6 py-3">{{ session.date }}</td>
-            <td class="px-6 py-3">{{ session.startTime }} - {{ session.endTime }}</td>
-            <td class="px-6 py-3">{{ session.coachId }}</td>
-            <td class="px-6 py-3">{{ session.roomId }}</td>
-            <td class="px-6 py-3">{{ session.places }}</td>
-            <td class="px-6 py-3 flex gap-2">
-              <button [routerLink]="['/admin/sessions/update', session.sessionId]" class="cursor-pointer px-3 py-1 text-xs rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
-                Edit
-              </button>
-              <button type="button" (click)="deleteSession(session.sessionId)" class="cursor-pointer px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">
-                Delete
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="8" class="py-10 text-center text-gray-500">
-              No sessions yet
-            </td>
-          </tr>
-        }
+      @for (session of sessions(); track session.sessionId) {
+      <tr class="border-t border-gray-200">
+        <td class="px-6 py-3">{{ session.sessionId }}</td>
+        <td class="px-6 py-3">{{ session.level }}</td>
+        <td class="px-6 py-3">{{ session.date }}</td>
+        <td class="px-6 py-3">{{ session.startTime | slice:0:5 }} - {{ session.endTime | slice:0:5 }}</td>
+        <td class="px-6 py-3">{{ session.coachName ?? '—' }}</td>
+        <td class="px-6 py-3">{{ session.roomNumber ?? '—' }}</td>
+        <td class="px-6 py-3">{{ session.places }}</td>
+        <td class="px-6 py-3 flex gap-2">
+          <button [routerLink]="['/admin/sessions/update', session.sessionId]"
+            class="cursor-pointer px-3 py-1 text-xs rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
+            Edit
+          </button>
+          <!-- <button type="button" (click)="deleteSession(session.sessionId)"
+            class="cursor-pointer px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">
+            Delete
+          </button> -->
+        </td>
+      </tr>
+      } @empty {
+      <tr>
+        <td colspan="8" class="py-10 text-center text-gray-500">
+          No sessions yet
+        </td>
+      </tr>
+      }
       }
     </tbody>
   </table>
 </div>
 
 @if (showCreateModal()) {
-<create-session-modal
-  [show]="showCreateModal"
-  [apiError]="createErrorMessage"
-  (close)="closeCreateModal()"
-  (save)="handleCreate($event)">
+<create-session-modal [show]="showCreateModal" [apiError]="createErrorMessage" [coachOptions]="coachOptions()"
+  [rooms]="rooms()" (close)="closeCreateModal()" (save)="handleCreate($event)">
 </create-session-modal>
 }

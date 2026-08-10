@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,8 @@ export class Register {
   email = '';
   password = '';
   confirmPassword = '';
+  isLoading = signal(false);
+
 
   constructor(
     private auth: AuthService,
@@ -23,7 +25,10 @@ export class Register {
   ) {}
 
   register() {
+    this.isLoading.set(true);
+
     if (this.password !== this.confirmPassword) {
+
       alert('Passwords do not match');
       return;
     }
@@ -46,6 +51,8 @@ export class Register {
           this.router.navigate(['/client']); // always client after register
         },
         error: (err) => {
+        this.isLoading.set(false);
+
           alert('Registration failed: ' + err.error.message);
           console.log(err.error.message)
         },
