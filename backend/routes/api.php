@@ -31,13 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('payments', PaymentController::class)->only([
             'index', 'store', 'show'
             ]);
-    // });
-    // Coach routes
-    // Route::middleware('abilities:coach')->group(function () {
-    // });
 
-    // Client routes
-    Route::middleware('abilities:client')->group(function () {
+
+
         Route::apiResource('reservations', ReservationController::class);
         Route::apiResource('waitings', WaitingController::class);
 
@@ -48,6 +44,6 @@ Route::middleware('auth:sanctum')->group(function () {
             ]);
 
     });
-})
+
 
 ?>
