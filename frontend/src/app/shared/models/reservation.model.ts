@@ -2,5 +2,6 @@ export interface Reservation {
   reservationId: number;
   sessionId: number;
   clientId: number;
-  status: string;
+  createdAt: string;
+  status: number;
 }

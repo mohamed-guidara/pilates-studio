@@ -1,0 +1,107 @@
+@if (show()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-2xl overflow-hidden rounded-xl bg-white p-6 shadow-2xl max-h-[85vh] flex flex-col">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">Session Details</h2>
+        @if (session) {
+          <p class="text-sm text-gray-600 mt-1">
+            Level: {{ session.level }}
+            <br>
+            Time: {{ session.date }} — {{ session.startTime | slice:0:5 }}-{{ session.endTime | slice:0:5 }}
+          </p>
+          <p class="text-sm text-gray-500">
+            Coach: {{ session.coachName ?? '—' }}
+            <br>
+            Room: {{ session.roomNumber ?? '—' }}
+          </p>
+        }
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex justify-center py-10">
+        <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else if (errorMessage()) {
+      <p class="text-red-600 text-sm">{{ errorMessage() }}</p>
+    } @else {
+      <div class="overflow-y-auto space-y-6 pr-1">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700 mb-2">Reservations ({{ actualReservationsNumber() }})</h3>
+          @if (reservations().length) {
+            <ul class="divide-y divide-gray-100 border border-gray-200 rounded-md">
+              @for (r of getSortedReservations(); track r.reservationId) {
+                <li class="flex items-center justify-between px-3 py-2 text-sm">
+
+                  <div class="flex flex-col">
+                    <span>{{ r.clientName }}</span>
+                    @if (r.createdAt) {
+                      <span class="text-xs text-gray-400">{{ r.createdAt | date:'MMM d, y, h:mm a' }}</span>
+                    }
+                  </div>
+
+                  @switch (r.status) {
+                    @case (2) {
+                      <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">Confirmed</span>
+                    }
+                    @case (1) {
+                      <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">Waiting</span>
+                    }
+                    @case (3) {
+                      <span class="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700">Cancelled</span>
+                    }
+                  }
+
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="text-sm text-gray-500">No reservations yet.</p>
+          }
+        </div>
+
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700 mb-2">Waiting List ({{ waitingList().length }})</h3>
+          @if (waitingList().length) {
+            <ul class="divide-y divide-gray-100 border border-gray-200 rounded-md">
+              @for (w of getSortedWaitingList(); track w.waitingId) {
+                <li class="flex items-center justify-between px-3 py-2 text-sm">
+
+                  <div class="flex flex-col">
+                    <span>{{ w.clientName }}</span>
+                    @if (w.createdAt) {
+                      <span class="text-xs text-gray-400">{{ w.createdAt | date:'MMM d, y, h:mm a' }}</span>
+                    }
+                  </div>
+
+                  @switch (w.status) {
+                    @case (2) {
+                      <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">Confirmed</span>
+                    }
+                    @case (1) {
+                      <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">Waiting</span>
+                    }
+                    @case (3) {
+                      <span class="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700">Cancelled</span>
+                    }
+                  }
+
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="text-sm text-gray-500">No one on the waiting list.</p>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="pt-4 flex justify-end">
+      <button (click)="closeModal()" class="px-4 py-2 rounded-md bg-gray-200 font-medium text-gray-700 hover:bg-gray-300">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+}

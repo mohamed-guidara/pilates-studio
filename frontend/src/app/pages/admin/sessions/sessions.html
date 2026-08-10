@@ -35,7 +35,8 @@
         <th class="px-6 py-3 font-medium">Time</th>
         <th class="px-6 py-3 font-medium">Coach</th>
         <th class="px-6 py-3 font-medium">Room</th>
-        <th class="px-6 py-3 font-medium">Places</th>
+        <th class="px-6 py-3 font-medium">Reservations</th>
+        <th class="px-6 py-3 font-medium">Price</th>
         <th class="px-6 py-3 font-medium">Manage</th>
       </tr>
     </thead>
@@ -51,23 +52,20 @@
       </tr>
       } @else {
       @for (session of sessions(); track session.sessionId) {
-      <tr class="border-t border-gray-200">
+      <tr class="border-t border-gray-200 cursor-pointer hover:bg-gray-100" (click)="openSessionDetails(session)">
         <td class="px-6 py-3">{{ session.sessionId }}</td>
         <td class="px-6 py-3">{{ session.level }}</td>
         <td class="px-6 py-3">{{ session.date }}</td>
         <td class="px-6 py-3">{{ session.startTime | slice:0:5 }} - {{ session.endTime | slice:0:5 }}</td>
         <td class="px-6 py-3">{{ session.coachName ?? '—' }}</td>
         <td class="px-6 py-3">{{ session.roomNumber ?? '—' }}</td>
-        <td class="px-6 py-3">{{ session.places }}</td>
+        <td class="px-6 py-3">{{ session.reservedCount }}/{{ session.places }}</td>
+        <td class="px-6 py-3">{{ session.price }}</td>
         <td class="px-6 py-3 flex gap-2">
-          <button [routerLink]="['/admin/sessions/update', session.sessionId]"
+          <button [routerLink]="['/admin/sessions/update', session.sessionId]" (click)="$event.stopPropagation()"
             class="cursor-pointer px-3 py-1 text-xs rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
             Edit
           </button>
-          <!-- <button type="button" (click)="deleteSession(session.sessionId)"
-            class="cursor-pointer px-3 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">
-            Delete
-          </button> -->
         </td>
       </tr>
       } @empty {
@@ -86,4 +84,8 @@
 <create-session-modal [show]="showCreateModal" [apiError]="createErrorMessage" [coachOptions]="coachOptions()"
   [rooms]="rooms()" (close)="closeCreateModal()" (save)="handleCreate($event)">
 </create-session-modal>
+}
+@if (showDetailModal()) {
+<session-detail-modal [show]="showDetailModal" [session]="selectedSession()" (close)="closeDetailModal()">
+</session-detail-modal>
 }

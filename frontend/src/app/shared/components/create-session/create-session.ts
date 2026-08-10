@@ -23,6 +23,7 @@ export class CreateSession {
     startTime: string;
     endTime: string;
     places: number;
+    price: number;
   }>();
 
   newSession = {
@@ -33,6 +34,7 @@ export class CreateSession {
     startTime: '',
     endTime: '',
     places: 0,
+    price: 0,
   };
 
   saveNewSession() {
@@ -44,9 +46,10 @@ export class CreateSession {
       startTime: this.newSession.startTime,
       endTime: this.newSession.endTime,
       places: Number(this.newSession.places),
+      price: Number(this.newSession.price),
     };
 
-    if (!payload.coachId || !payload.roomId || !payload.level || !payload.date || !payload.startTime || !payload.endTime || !payload.places) {
+    if (!payload.coachId || !payload.roomId || !payload.level || !payload.date || !payload.startTime || !payload.endTime || !payload.places || payload.price <= 0) {
       this.apiError.set('Please fill in all required fields.');
       return;
     }

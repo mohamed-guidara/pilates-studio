@@ -7,4 +7,5 @@ export interface Session {
   startTime: string;
   endTime: string;
   places: number;
+  price: number;
 }

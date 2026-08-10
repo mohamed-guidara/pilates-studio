@@ -27,6 +27,7 @@ export class SessionService {
     startTime: string;
     endTime: string;
     places: number;
+    price: number;
   }) {
     return this.http.post<Session>(this.apiUrl, data);
   }
@@ -39,6 +40,7 @@ export class SessionService {
     startTime: string;
     endTime: string;
     places: number;
+    price: number;
   }): Observable<Session> {
     return this.http.put<Session>(`${this.apiUrl}/${id}`, data);
   }

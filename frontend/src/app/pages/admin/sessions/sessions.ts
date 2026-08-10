@@ -12,23 +12,27 @@ import { Person } from '../../../shared/models/person.model';
 import { Room } from '../../../shared/models/room.model';
 import { CreateSession } from '../../../shared/components/create-session/create-session';
 import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
+import { SessionDetailModal } from "../../../shared/components/session-detail/session-detail-modal";
+import { ReservationService } from '../../../services/reservationService.service';
 
 @Component({
   selector: 'app-sessions',
   standalone: true,
-  imports: [CommonModule, CreateSession, RouterLink, FeedbackMessage],
+  imports: [CommonModule, CreateSession, RouterLink, FeedbackMessage, SessionDetailModal],
   templateUrl: './sessions.html',
   styleUrl: './sessions.css',
 })
 export class Sessions implements OnInit {
   isLoading = signal(true);
-  sessions = signal<(Session & { coachName?: string; roomNumber?: string })[]>([]);
+  sessions = signal<(Session & { coachName?: string; roomNumber?: string; reservedCount?: number })[]>([]);
   coachOptions = signal<{ coachId: number; fullName: string }[]>([]);
   rooms = signal<Room[]>([]);
   showCreateModal = signal(false);
   createErrorMessage = signal<string | null>(null);
   pageErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
+  showDetailModal = signal(false);
+  selectedSession = signal<(Session & { coachName?: string; roomNumber?: string; reservedCount?: number }) | null>(null);
 
   constructor(
     private router: Router,
@@ -37,6 +41,7 @@ export class Sessions implements OnInit {
     private coachService: CoachService,
     private personsService: PersonsService,
     private roomService: RoomService,
+    private reservationService: ReservationService,
   ) {}
 
   ngOnInit() {
@@ -62,14 +67,24 @@ export class Sessions implements OnInit {
       coaches: this.coachService.getCoaches(),
       persons: this.personsService.getPersons(),
       rooms: this.roomService.getRooms(),
+      reservations: this.reservationService.getReservations(),
     }).pipe(
       finalize(() => {
         this.isLoading.set(false);
       })
     ).subscribe({
-      next: ({ sessions, coaches, persons, rooms }) => {
+      next: ({ sessions, coaches, persons, rooms, reservations }) => {
         this.rooms.set(rooms);
-        this.coachOptions.set( 
+
+        // Count only confirmed (2) and waiting (1) reservations
+        const reservationCountBySession = reservations.reduce((countMap, reservation) => {
+          if (reservation.status === 1 || reservation.status === 2) {
+            countMap[reservation.sessionId] = (countMap[reservation.sessionId] || 0) + 1;
+          }
+          return countMap;
+        }, {} as Record<number, number>);
+
+        this.coachOptions.set(
           coaches.map((coach) => {
             const person = persons.find((p) => p.personId === coach.personId);
             return {
@@ -88,6 +103,7 @@ export class Sessions implements OnInit {
               ...session,
               coachName: person ? `${person.firstName} ${person.lastName}` : undefined,
               roomNumber: room?.number,
+              reservedCount: reservationCountBySession[session.sessionId] || 0,
             };
           })
         );
@@ -116,6 +132,7 @@ export class Sessions implements OnInit {
     startTime: string;
     endTime: string;
     places: number;
+    price: number;
   }) {
     this.createErrorMessage.set(null);
     this.pageErrorMessage.set(null);
@@ -166,5 +183,14 @@ export class Sessions implements OnInit {
     }
 
     return err?.statusText || 'An unexpected error occurred.';
+  }
+
+  openSessionDetails(session: Session & { coachName?: string; roomNumber?: string }) {
+    this.selectedSession.set(session);
+    this.showDetailModal.set(true);
+  }
+
+  closeDetailModal() {
+    this.showDetailModal.set(false);
   }
 }

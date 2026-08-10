@@ -28,7 +28,7 @@ export class UpdateSession implements OnInit {
     private sessionService: SessionService,
     private coachService: CoachService,
     private personsService: PersonsService,
-    private roomService: RoomService, 
+    private roomService: RoomService,
     private route: ActivatedRoute,
     private router: Router,
   ) {}
@@ -101,6 +101,7 @@ export class UpdateSession implements OnInit {
       startTime: session.startTime,
       endTime: session.endTime,
       places: session.places,
+      price: session.price,
     }).subscribe({
       next: () => {
         this.router.navigate(['/admin/sessions'], {
