@@ -2,7 +2,9 @@ import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Client } from '../../models/client.model';
+import { Person } from '../../models/person.model';
 import { ClientService } from '../../../services/clientService.service';
+import { PersonsService } from '../../../services/personService.service';
 import { FeedbackMessage } from '../feedback-message/feedback-message';
 
 @Component({
@@ -14,11 +16,14 @@ import { FeedbackMessage } from '../feedback-message/feedback-message';
 export class UpdateClient implements OnInit {
   clientId = -1;
   client = signal<Client | null>(null);
+  clientPerson = signal<Person | null>(null);
+  password = signal(''); // API requires password, empty if unchanged
   pageErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
   constructor(
     private clientService: ClientService,
+    private personsService: PersonsService,
     private route: ActivatedRoute,
     private router: Router,
   ) {}
@@ -41,7 +46,16 @@ export class UpdateClient implements OnInit {
     this.successMessage.set(null);
 
     this.clientService.getClient(id).subscribe({
-      next: (client) => this.client.set(client),
+      next: (c) => {
+        this.client.set(c);
+        this.personsService.getPerson(c.personId).subscribe({
+          next: (p) => this.clientPerson.set(p),
+          error: (err) => {
+            this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load client person data.');
+            console.error('Error loading person:', err);
+          },
+        });
+      },
       error: (err) => {
         this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load client data.');
         console.error('Error loading client:', err);
@@ -49,16 +63,20 @@ export class UpdateClient implements OnInit {
     });
   }
 
+  updatePersonField<K extends keyof Person>(key: K, value: Person[K]) {
+    const current = this.clientPerson();
+    if (current) this.clientPerson.set({ ...current, [key]: value });
+  }
+
   updateClientField<K extends keyof Client>(key: K, value: Client[K]) {
     const current = this.client();
-    if (current) {
-      this.client.set({ ...current, [key]: value });
-    }
+    if (current) this.client.set({ ...current, [key]: value });
   }
 
   saveClient() {
     const client = this.client();
-    if (!client) {
+    const clientPerson = this.clientPerson();
+    if (!client || !clientPerson) {
       this.pageErrorMessage.set('Unable to save. Client data is not loaded.');
       return;
     }
@@ -66,21 +84,39 @@ export class UpdateClient implements OnInit {
     this.pageErrorMessage.set(null);
     this.successMessage.set(null);
 
-    this.clientService.updateClient(client.clientId, {
-      personId: client.personId,
-      level: client.level,
-    }).subscribe({
-      next: () => {
-        this.router.navigate(['/admin/clients'], {
-          queryParams: { success: 'Client updated successfully.' },
-          replaceUrl: true,
-        });
-      },
-      error: (err) => {
-        this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Could not update client. Please try again.');
-        console.error('Error updating client:', err);
-      },
-    });
+    this.personsService
+      .updatePerson(clientPerson.personId, {
+        ...clientPerson,
+        password: this.password() || '',
+      })
+      .subscribe({
+        next: (updatedPerson) => {
+          this.clientPerson.set(updatedPerson);
+
+          this.clientService
+            .updateClient(client.clientId, {
+              personId: clientPerson.personId,
+              level: client.level,
+            })
+            .subscribe({
+              next: (updatedClient) => {
+                this.client.set(updatedClient);
+                this.router.navigate(['/admin/clients'], {
+                  queryParams: { success: 'Client updated successfully.' },
+                  replaceUrl: true,
+                });
+              },
+              error: (err) => {
+                this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Could not update client. Please try again.');
+                console.error('Error updating client:', err);
+              },
+            });
+        },
+        error: (err) => {
+          this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Could not update client personal details. Please try again.');
+          console.error('Error updating person:', err);
+        },
+      });
   }
 
   private extractErrorMessage(err: any): string {

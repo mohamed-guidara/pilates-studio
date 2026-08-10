@@ -1,8 +1,11 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { Equipment } from '../../models/equipment.model';
+import { Room } from '../../models/room.model';
 import { EquipmentService } from '../../../services/equipmentService.service';
+import { RoomService } from '../../../services/roomService.service';
 import { FeedbackMessage } from '../feedback-message/feedback-message';
 
 @Component({
@@ -14,11 +17,13 @@ import { FeedbackMessage } from '../feedback-message/feedback-message';
 export class UpdateEquipment implements OnInit {
   equipmentId = -1;
   equipment = signal<Equipment | null>(null);
+  rooms = signal<Room[]>([]); // ✅ add this
   pageErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
   constructor(
     private equipmentService: EquipmentService,
+    private roomService: RoomService, // ✅ inject this
     private route: ActivatedRoute,
     private router: Router,
   ) {}
@@ -40,8 +45,14 @@ export class UpdateEquipment implements OnInit {
     this.pageErrorMessage.set(null);
     this.successMessage.set(null);
 
-    this.equipmentService.getEquipment(id).subscribe({
-      next: (equipment) => this.equipment.set(equipment),
+    forkJoin({
+      equipment: this.equipmentService.getEquipment(id),
+      rooms: this.roomService.getRooms()
+    }).subscribe({
+      next: ({ equipment, rooms }) => {
+        this.equipment.set(equipment);
+        this.rooms.set(rooms);
+      },
       error: (err) => {
         this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load equipment data.');
         console.error('Error loading equipment:', err);

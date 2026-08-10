@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FeedbackMessage } from '../feedback-message/feedback-message';
+import { Room } from '../../models/room.model';
 
 @Component({
   selector: 'create-equipment-modal',
@@ -11,6 +12,7 @@ import { FeedbackMessage } from '../feedback-message/feedback-message';
 export class CreateEquipment {
   @Input() show = signal(false);
   @Input() apiError = signal<string | null>(null);
+  @Input() rooms: Room[] = [];
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<{ roomId: number; name: string; description: string; isAvailable: number }>();
 

@@ -1,8 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { Session } from '../../models/session.model';
 import { SessionService } from '../../../services/sessionService.service';
+import { CoachService } from '../../../services/coachService.service';
+import { PersonsService } from '../../../services/personService.service';
+import { RoomService } from '../../../services/roomService.service';
+import { Room } from '../../models/room.model';
 import { FeedbackMessage } from '../feedback-message/feedback-message';
 
 @Component({
@@ -14,11 +19,16 @@ import { FeedbackMessage } from '../feedback-message/feedback-message';
 export class UpdateSession implements OnInit {
   sessionId = -1;
   session = signal<Session | null>(null);
+  coachOptions = signal<{ coachId: number; fullName: string }[]>([]);
+  rooms = signal<Room[]>([]);
   pageErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
 
   constructor(
     private sessionService: SessionService,
+    private coachService: CoachService,
+    private personsService: PersonsService,
+    private roomService: RoomService, 
     private route: ActivatedRoute,
     private router: Router,
   ) {}
@@ -40,8 +50,25 @@ export class UpdateSession implements OnInit {
     this.pageErrorMessage.set(null);
     this.successMessage.set(null);
 
-    this.sessionService.getSession(id).subscribe({
-      next: (session) => this.session.set(session),
+    forkJoin({
+      session: this.sessionService.getSession(id),
+      coaches: this.coachService.getCoaches(),
+      persons: this.personsService.getPersons(),
+      rooms: this.roomService.getRooms(),
+    }).subscribe({
+      next: ({ session, coaches, persons, rooms }) => {
+        this.session.set(session);
+        this.rooms.set(rooms);
+        this.coachOptions.set(
+          coaches.map((coach) => {
+            const person = persons.find((p) => p.personId === coach.personId);
+            return {
+              coachId: coach.coachId,
+              fullName: person ? `${person.firstName} ${person.lastName}` : `Coach #${coach.coachId}`,
+            };
+          })
+        );
+      },
       error: (err) => {
         this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load session data.');
         console.error('Error loading session:', err);

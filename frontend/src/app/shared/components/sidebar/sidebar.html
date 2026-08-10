@@ -7,15 +7,17 @@
       </div>
 
       <nav class="p-2 space-y-1">
-        <ng-container>
-          @for (item of navItems; track $index) {
-            <a [routerLink]="item.to"
-               routerLinkActive="bg-blue-600 text-white border-blue-600"
-               class="p-3 rounded-lg transition-all duration-200 flex items-center gap-2 border-l-4 border-transparent hover:bg-blue-100 hover:border-blue-400">
-              {{ item.label }}
-            </a>
-          }
-        </ng-container>
+        @for (item of navItems; track item.to) {
+          <!-- Check if currentUrl includes the item's path to apply active classes -->
+          <a [routerLink]="item.to"
+             [class.bg-blue-600]="currentUrl().includes(item.to)"
+             [class.text-white]="currentUrl().includes(item.to)"
+             [class.border-blue-600]="currentUrl().includes(item.to)"
+             [class.border-transparent]="!currentUrl().includes(item.to)"
+             class="p-3 rounded-lg transition-all duration-200 flex items-center gap-2 border-l-4 hover:bg-blue-100 hover:border-blue-400">
+            {{ item.label }}
+          </a>
+        }
       </nav>
     </div>
 
