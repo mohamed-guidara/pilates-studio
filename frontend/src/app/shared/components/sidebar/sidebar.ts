@@ -12,13 +12,16 @@ import { filter } from 'rxjs';
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
-  
+
   navItems = [
     { to: '/admin/coaches', label: 'Coaches' },
     { to: '/admin/rooms', label: 'Rooms' },
     { to: '/admin/equipments', label: 'Equipments' },
     { to: '/admin/clients', label: 'Clients' },
-    { to: '/admin/sessions', label: 'Sessions' }
+    { to: '/admin/sessions', label: 'Sessions' },
+    { to: '/admin/reservations', label: 'Reservations' },
+    { to: '/admin/payments', label: 'Payments' },
+    { to: '/admin/waitings', label: 'Waitings' },
   ];
 
   // Signal to hold the current URL

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Person } from '../shared/models/person.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,19 +21,22 @@ export class AuthService {
   }
 
   // Save token + role in localStorage
-  saveToken(token: string, role: string, person?: any) {
+  saveToken(token: string, role: string, person?: Person) {
     localStorage.setItem('token', token);
     localStorage.setItem('role', role);
 
     if (person) {
       localStorage.setItem('firstName', person.firstName);
+      localStorage.setItem('personId', person.personId.toString());
     }
 }
 
 getFirstName(): string | null {
   return  localStorage.getItem('firstName');
+}
 
-
+getId(): string | null {
+  return localStorage.getItem('personId')
 }
 
   // Check if user is logged in

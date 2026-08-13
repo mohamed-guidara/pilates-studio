@@ -17,6 +17,9 @@ import { UpdateRoom } from './shared/components/update-room/update-room';
 import { UpdateEquipment } from './shared/components/update-equipment/update-equipment';
 import { UpdateClient } from './shared/components/update-client/update-client';
 import { UpdateSession } from './shared/components/update-session/update-session';
+import { Reservations } from './pages/admin/reservations/reservations';
+import { Payments } from './pages/admin/payments/payments';
+import { Waitings } from './pages/admin/waitings/waitings';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -28,7 +31,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: WelcomePage },
       { path: 'coaches', component: Coaches },
-      { path: 'coaches/update/:id', component: UpdateCoach }, 
+      { path: 'coaches/update/:id', component: UpdateCoach },
       { path: 'rooms', component: Rooms },
       { path: 'rooms/update/:id', component: UpdateRoom },
       { path: 'equipments', component: Equipments },
@@ -37,6 +40,9 @@ export const routes: Routes = [
       { path: 'sessions/update/:id', component: UpdateSession },
       { path: 'clients', component: Clients },
       { path: 'clients/update/:id', component: UpdateClient },
+      { path: 'reservations', component: Reservations },
+      { path: 'payments', component: Payments },
+      { path: 'waitings', component: Waitings },
     ],
   },
   { path: 'coach', component: CoachDashboard },

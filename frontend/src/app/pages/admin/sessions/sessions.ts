@@ -14,11 +14,13 @@ import { CreateSession } from '../../../shared/components/create-session/create-
 import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
 import { SessionDetailModal } from "../../../shared/components/session-detail/session-detail-modal";
 import { ReservationService } from '../../../services/reservationService.service';
+import { SessionLevelPipe } from '../../../assets/session-level-pipe';
+import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
 
 @Component({
   selector: 'app-sessions',
   standalone: true,
-  imports: [CommonModule, CreateSession, RouterLink, FeedbackMessage, SessionDetailModal],
+  imports: [CommonModule, CreateSession, RouterLink, FeedbackMessage, SessionDetailModal, SessionLevelPipe, SessionCategoryPipe],
   templateUrl: './sessions.html',
   styleUrl: './sessions.css',
 })
@@ -127,12 +129,13 @@ export class Sessions implements OnInit {
   handleCreate(newSession: {
     coachId: number;
     roomId: number;
-    level: string;
+    level: number;
     date: string;
     startTime: string;
     endTime: string;
     places: number;
     price: number;
+    category: number
   }) {
     this.createErrorMessage.set(null);
     this.pageErrorMessage.set(null);

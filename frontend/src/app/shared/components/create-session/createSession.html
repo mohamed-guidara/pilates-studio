@@ -10,6 +10,17 @@
       }
 
       <div>
+        <label class="block mb-1 text-sm font-medium text-gray-700">Category</label>
+        <select [(ngModel)]="newSession.category" name="category" required
+          class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <option [value]="0" disabled>Select a category</option>
+          @for (catNum of [1,2,3,4,5]; track catNum) {
+          <option [value]="catNum">{{ catNum | sessionCategory }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
         <label class="block mb-1 text-sm font-medium text-gray-700">Coach</label>
         <select [(ngModel)]="newSession.coachId" name="coachId" required
           class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
@@ -32,8 +43,13 @@
       </div>
       <div>
         <label class="block mb-1 text-sm font-medium text-gray-700">Level</label>
-        <input type="text" [(ngModel)]="newSession.level" name="level" required
-          class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        <select [(ngModel)]="newSession.category" name="category" required
+          class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <option [value]="0" disabled>Select a level</option>
+          @for (levelNum of [1,2,3]; track levelNum) {
+          <option [value]="levelNum">{{ levelNum | sessionLevel }}</option>
+          }
+        </select>
       </div>
 
       <div class="grid grid-cols-2 gap-4">

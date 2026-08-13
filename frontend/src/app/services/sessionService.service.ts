@@ -22,12 +22,13 @@ export class SessionService {
   createSession(data: {
     coachId: number;
     roomId: number;
-    level: string;
+    level: number;
     date: string;
     startTime: string;
     endTime: string;
     places: number;
     price: number;
+    category: number;
   }) {
     return this.http.post<Session>(this.apiUrl, data);
   }
@@ -35,12 +36,13 @@ export class SessionService {
   updateSession(id: number, data: {
     coachId: number;
     roomId: number;
-    level: string;
+    level: number;
     date: string;
     startTime: string;
     endTime: string;
     places: number;
     price: number;
+    category: number;
   }): Observable<Session> {
     return this.http.put<Session>(`${this.apiUrl}/${id}`, data);
   }

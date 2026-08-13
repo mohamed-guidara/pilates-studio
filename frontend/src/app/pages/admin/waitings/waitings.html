@@ -9,9 +9,9 @@
     <caption class="p-5 text-lg font-medium text-gray-800">
       <div class="flex items-center justify-between">
         <div class="flex flex-col items-start">
-          Reservations overview
+          Waiting list overview
           <p class="mt-1.5 text-sm font-normal text-gray-600">
-            list of all reservations history.
+            list of waitings clients .
           </p>
         </div>
       </div>
@@ -24,52 +24,52 @@
         <th class="px-6 py-3 font-medium">Session</th>
         <th class="px-6 py-3 font-medium">Level</th>
         <th class="px-6 py-3 font-medium">Date</th>
+        <th class="px-6 py-3 font-medium">Time</th>
         <th class="px-6 py-3 font-medium">Coach</th>
         <th class="px-6 py-3 font-medium">Room</th>
-        <th class="px-6 py-3 font-medium">Price</th>
         <th class="px-6 py-3 font-medium">Status</th>
-        <th class="px-6 py-3 font-medium">Reserved At</th>
+        <th class="px-6 py-3 font-medium">Requested At</th>
       </tr>
     </thead>
 
     <tbody>
       @if (isLoading()) {
         <tr>
-          <td colspan="10" class="py-10">
+          <td colspan="9" class="py-10">
             <div class="flex justify-center items-center">
               <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           </td>
         </tr>
       } @else {
-        @for (reservation of reservations(); track reservation.reservationId) {
+        @for (waiting of waitings(); track waiting.waitingId) {
           <tr class="border-t border-gray-200 hover:bg-gray-100">
-            <td class="px-6 py-3">{{ reservation.reservationId }}</td>
-            <td class="px-6 py-3">{{ reservation.clientName }}</td>
-            <td class="px-6 py-3">{{ reservation.sessionInfo }}</td>
-            <td class="px-6 py-3">{{ reservation.sessionLevel || '—' }}</td>
-            <td class="px-6 py-3">{{ reservation.sessionDate || '—' }}</td>
-            <td class="px-6 py-3">{{ reservation.sessionCoach || '—' }}</td>
-            <td class="px-6 py-3">{{ reservation.sessionRoom || '—' }}</td>
-            <td class="px-6 py-3">{{ reservation.sessionPrice != null ? reservation.sessionPrice : '—' }}</td>
+            <td class="px-6 py-3">{{ waiting.waitingId }}</td>
+            <td class="px-6 py-3">{{ waiting.clientName }}</td>
+            <td class="px-6 py-3">{{ waiting.sessionInfo }}</td>
+            <td class="px-6 py-3">{{ waiting.sessionLevel || '—' }}</td>
+            <td class="px-6 py-3">{{ waiting.sessionDate || '—' }}</td>
+            <td class="px-6 py-3">{{ waiting.sessionTime || '—' }}</td>
+            <td class="px-6 py-3">{{ waiting.sessionCoach || '—' }}</td>
+            <td class="px-6 py-3">{{ waiting.sessionRoom || '—' }}</td>
             <td class="px-6 py-3">
               <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
                 [ngClass]="{
-                  'bg-green-100 text-green-700': reservation.statusLabel === 'Confirmed',
-                  'bg-yellow-100 text-yellow-700': reservation.statusLabel === 'Waiting',
-                  'bg-red-100 text-red-700': reservation.statusLabel === 'Cancelled',
-                  'bg-slate-100 text-slate-700': reservation.statusLabel === 'Unknown'
+                  'bg-yellow-100 text-yellow-700': waiting.waitingStatus === 'Waiting',
+                  'bg-green-100 text-green-700': waiting.waitingStatus === 'Accepted',
+                  'bg-red-100 text-red-700': waiting.waitingStatus === 'Cancelled',
+                  'bg-slate-100 text-slate-700': waiting.waitingStatus !== 'Waiting' && waiting.waitingStatus !== 'Accepted' && waiting.waitingStatus !== 'Cancelled'
                 }"
               >
-                {{ reservation.statusLabel }}
+                {{ waiting.waitingStatus || 'Unknown' }}
               </span>
             </td>
-            <td class="px-6 py-3">{{ reservation.createdAt | date:'short' }}</td>
+            <td class="px-6 py-3">{{ waiting.createdAt | date:'short' }}</td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="10" class="py-10 text-center text-gray-500">
-              No reservations yet
+            <td colspan="9" class="py-10 text-center text-gray-500">
+              No waitings yet
             </td>
           </tr>
         }

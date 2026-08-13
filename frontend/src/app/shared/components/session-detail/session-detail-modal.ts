@@ -8,11 +8,13 @@ import { PersonsService } from '../../../services/personService.service';
 import { Reservation } from '../../models/reservation.model';
 import { Waiting } from '../../models/waiting.model';
 import { Session } from '../../models/session.model';
+import { SessionLevelPipe } from '../../../assets/session-level-pipe';
+import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
 
 @Component({
   selector: 'session-detail-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SessionLevelPipe, SessionCategoryPipe],
   templateUrl: './sessionDetail.html',
 })
 export class SessionDetailModal implements OnChanges {

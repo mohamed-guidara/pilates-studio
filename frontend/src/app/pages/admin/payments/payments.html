@@ -1,0 +1,60 @@
+<div class="relative overflow-hidden bg-gray-50 shadow rounded-xl border border-gray-200">
+  @if (pageErrorMessage()) {
+    <div class="p-5">
+      <feedback-message [message]="pageErrorMessage()" type="error"></feedback-message>
+    </div>
+  }
+
+  <table class="w-full text-sm text-left border-collapse">
+    <caption class="p-5 text-lg font-medium text-gray-800">
+      <div class="flex items-center justify-between">
+        <div class="flex flex-col items-start">
+          Payments overview
+          <p class="mt-1.5 text-sm font-normal text-gray-600">
+            list of all payments history.
+          </p>
+        </div>
+      </div>
+    </caption>
+
+    <thead class="text-sm bg-gray-200 border-y border-gray-300">
+      <tr>
+        <th class="px-6 py-3 font-medium">ID</th>
+        <th class="px-6 py-3 font-medium">Client</th>
+        <th class="px-6 py-3 font-medium">Session</th>
+        <th class="px-6 py-3 font-medium">Room</th>
+        <th class="px-6 py-3 font-medium">Amount</th>
+        <th class="px-6 py-3 font-medium">Paid At</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @if (isLoading()) {
+        <tr>
+          <td colspan="6" class="py-10">
+            <div class="flex justify-center items-center">
+              <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </td>
+        </tr>
+      } @else {
+        @for (payment of payments(); track payment.paymentId) {
+          <tr class="border-t border-gray-200 hover:bg-gray-100">
+            <td class="px-6 py-3">{{ payment.paymentId }}</td>
+            <td class="px-6 py-3">{{ payment.clientName }}</td>
+            <td class="px-6 py-3">{{ payment.sessionInfo }}</td>
+            <td class="px-6 py-3">{{ payment.sessionInfo ? payment.sessionInfo.split('•')[0].trim() : '—' }}</td>
+            <td class="px-6 py-3">{{ payment.amount }}</td>
+            <td class="px-6 py-3">{{ payment.createdAt | date:'short' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="py-10 text-center text-gray-500">
+              No payments yet
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>

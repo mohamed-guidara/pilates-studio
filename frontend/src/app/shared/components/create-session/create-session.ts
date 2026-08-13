@@ -2,11 +2,13 @@ import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FeedbackMessage } from '../feedback-message/feedback-message';
 import { Room } from '../../models/room.model';
+import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
+import { SessionLevelPipe } from '../../../assets/session-level-pipe';
 
 @Component({
   selector: 'create-session-modal',
   standalone: true,
-  imports: [FormsModule, FeedbackMessage],
+  imports: [FormsModule, FeedbackMessage, SessionCategoryPipe, SessionLevelPipe],
   templateUrl: './createSession.html',
 })
 export class CreateSession {
@@ -18,35 +20,38 @@ export class CreateSession {
   @Output() save = new EventEmitter<{
     coachId: number;
     roomId: number;
-    level: string;
+    level: number;
     date: string;
     startTime: string;
     endTime: string;
     places: number;
     price: number;
+    category: number;
   }>();
 
   newSession = {
     coachId: 0,
     roomId: 0,
-    level: '',
+    level: 1,
     date: '',
     startTime: '',
     endTime: '',
     places: 0,
     price: 0,
+    category: 0
   };
 
   saveNewSession() {
     const payload = {
       coachId: Number(this.newSession.coachId),
       roomId: Number(this.newSession.roomId),
-      level: this.newSession.level.trim(),
+      level: this.newSession.level,
       date: this.newSession.date,
       startTime: this.newSession.startTime,
       endTime: this.newSession.endTime,
       places: Number(this.newSession.places),
       price: Number(this.newSession.price),
+      category: Number(this.newSession.category)
     };
 
     if (!payload.coachId || !payload.roomId || !payload.level || !payload.date || !payload.startTime || !payload.endTime || !payload.places || payload.price <= 0) {

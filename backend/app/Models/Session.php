@@ -22,6 +22,7 @@ class Session extends Model
         'endTime',
         'places',
         'price',
+        'category',
     ];
 
     // Relationships

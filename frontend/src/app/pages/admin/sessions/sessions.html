@@ -30,6 +30,7 @@
     <thead class="text-sm bg-gray-200 border-y border-gray-300">
       <tr>
         <th class="px-6 py-3 font-medium">ID</th>
+        <th class="px-6 py-3 font-medium">Category</th>
         <th class="px-6 py-3 font-medium">Level</th>
         <th class="px-6 py-3 font-medium">Date</th>
         <th class="px-6 py-3 font-medium">Time</th>
@@ -54,7 +55,8 @@
       @for (session of sessions(); track session.sessionId) {
       <tr class="border-t border-gray-200 cursor-pointer hover:bg-gray-100" (click)="openSessionDetails(session)">
         <td class="px-6 py-3">{{ session.sessionId }}</td>
-        <td class="px-6 py-3">{{ session.level }}</td>
+        <td class="px-6 py-3">{{session.category | sessionCategory}}</td>
+        <td class="px-6 py-3">{{ session.level | sessionLevel }}</td>
         <td class="px-6 py-3">{{ session.date }}</td>
         <td class="px-6 py-3">{{ session.startTime | slice:0:5 }} - {{ session.endTime | slice:0:5 }}</td>
         <td class="px-6 py-3">{{ session.coachName ?? '—' }}</td>

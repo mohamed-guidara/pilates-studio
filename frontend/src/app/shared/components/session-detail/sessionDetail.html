@@ -6,7 +6,9 @@
         <h2 class="text-xl font-bold text-gray-800">Session Details</h2>
         @if (session) {
           <p class="text-sm text-gray-600 mt-1">
-            Level: {{ session.level }}
+            Category: {{ session.category | sessionCategory }}
+            <br>
+            Level: {{ session.level | sessionLevel }}
             <br>
             Time: {{ session.date }} — {{ session.startTime | slice:0:5 }}-{{ session.endTime | slice:0:5 }}
           </p>
@@ -77,7 +79,7 @@
 
                   @switch (w.status) {
                     @case (2) {
-                      <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">Confirmed</span>
+                      <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">Accepted</span>
                     }
                     @case (1) {
                       <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">Waiting</span>

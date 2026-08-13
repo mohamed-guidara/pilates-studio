@@ -9,11 +9,13 @@ import { PersonsService } from '../../../services/personService.service';
 import { RoomService } from '../../../services/roomService.service';
 import { Room } from '../../models/room.model';
 import { FeedbackMessage } from '../feedback-message/feedback-message';
+import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
+import { SessionLevelPipe } from '../../../assets/session-level-pipe';
 
 @Component({
   selector: 'update-session',
   standalone: true,
-  imports: [FormsModule, RouterLink, FeedbackMessage],
+  imports: [FormsModule, RouterLink, FeedbackMessage, SessionCategoryPipe, SessionLevelPipe],
   templateUrl: './updateSession.html',
 })
 export class UpdateSession implements OnInit {
@@ -102,6 +104,7 @@ export class UpdateSession implements OnInit {
       endTime: session.endTime,
       places: session.places,
       price: session.price,
+      category: session.category
     }).subscribe({
       next: () => {
         this.router.navigate(['/admin/sessions'], {
@@ -131,6 +134,6 @@ export class UpdateSession implements OnInit {
         .join(' ');
     }
 
-    return err?.statusText || 'An unexpected error occurred.';
+    return err?.statusText || 'An error occurred.';
   }
 }
