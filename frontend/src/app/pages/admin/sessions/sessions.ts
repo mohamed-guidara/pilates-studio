@@ -6,35 +6,49 @@ import { SessionService } from '../../../services/sessionService.service';
 import { CoachService } from '../../../services/coachService.service';
 import { PersonsService } from '../../../services/personService.service';
 import { RoomService } from '../../../services/roomService.service';
-import { Session } from '../../../shared/models/session.model';
-import { Coach } from '../../../shared/models/coach.model';
-import { Person } from '../../../shared/models/person.model';
-import { Room } from '../../../shared/models/room.model';
 import { CreateSession } from '../../../shared/components/create-session/create-session';
 import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
 import { SessionDetailModal } from "../../../shared/components/session-detail/session-detail-modal";
 import { ReservationService } from '../../../services/reservationService.service';
 import { SessionLevelPipe } from '../../../assets/session-level-pipe';
 import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
+import { SessionCalendar } from '../../../shared/components/session-calendar/session-calendar';
+import { SessionVM, buildCoachOptions, enrichSessions, resolveCurrentCoach } from '../../../shared/utils/session-enrichment.util';
+import { Room } from '../../../shared/models/room.model';
 
 @Component({
   selector: 'app-sessions',
   standalone: true,
-  imports: [CommonModule, CreateSession, RouterLink, FeedbackMessage, SessionDetailModal, SessionLevelPipe, SessionCategoryPipe],
+  imports: [
+    CommonModule,
+    CreateSession,
+    RouterLink,
+    FeedbackMessage,
+    SessionDetailModal,
+    SessionCalendar,
+    SessionLevelPipe,
+    SessionCategoryPipe,
+  ],
   templateUrl: './sessions.html',
   styleUrl: './sessions.css',
 })
 export class Sessions implements OnInit {
   isLoading = signal(true);
-  sessions = signal<(Session & { coachName?: string; roomNumber?: string; reservedCount?: number })[]>([]);
+  sessions = signal<SessionVM[]>([]);
   coachOptions = signal<{ coachId: number; fullName: string }[]>([]);
   rooms = signal<Room[]>([]);
+  /** The logged-in admin's own coachId (admins are coaches with isAdmin = 1), used by the calendar's "show only mine" filter. */
+  myCoachId = signal<number | null>(null);
+
   showCreateModal = signal(false);
   createErrorMessage = signal<string | null>(null);
   pageErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   showDetailModal = signal(false);
-  selectedSession = signal<(Session & { coachName?: string; roomNumber?: string; reservedCount?: number }) | null>(null);
+  selectedSession = signal<SessionVM | null>(null);
+
+  /** Toggles between the original table and the shared calendar view, in place. */
+  viewAsCalendar = signal(false);
 
   constructor(
     private router: Router,
@@ -60,6 +74,10 @@ export class Sessions implements OnInit {
     this.loadSessions();
   }
 
+  toggleCalendarView(): void {
+    this.viewAsCalendar.update((v) => !v);
+  }
+
   loadSessions() {
     this.pageErrorMessage.set(null);
     this.isLoading.set(true);
@@ -77,38 +95,9 @@ export class Sessions implements OnInit {
     ).subscribe({
       next: ({ sessions, coaches, persons, rooms, reservations }) => {
         this.rooms.set(rooms);
-
-        // Count only confirmed (2) and waiting (1) reservations
-        const reservationCountBySession = reservations.reduce((countMap, reservation) => {
-          if (reservation.status === 1 || reservation.status === 2) {
-            countMap[reservation.sessionId] = (countMap[reservation.sessionId] || 0) + 1;
-          }
-          return countMap;
-        }, {} as Record<number, number>);
-
-        this.coachOptions.set(
-          coaches.map((coach) => {
-            const person = persons.find((p) => p.personId === coach.personId);
-            return {
-              coachId: coach.coachId,
-              fullName: person ? `${person.firstName} ${person.lastName}` : `Coach #${coach.coachId}`,
-            };
-          })
-        );
-        this.sessions.set(
-          sessions.map((session) => {
-            const coach = coaches.find((c) => c.coachId === session.coachId);
-            const person = coach ? persons.find((p) => p.personId === coach.personId) : undefined;
-            const room = rooms.find((r) => r.roomId === session.roomId);
-
-            return {
-              ...session,
-              coachName: person ? `${person.firstName} ${person.lastName}` : undefined,
-              roomNumber: room?.number,
-              reservedCount: reservationCountBySession[session.sessionId] || 0,
-            };
-          })
-        );
+        this.coachOptions.set(buildCoachOptions(coaches, persons));
+        this.sessions.set(enrichSessions(sessions, coaches, persons, rooms, reservations));
+        this.myCoachId.set(resolveCurrentCoach(coaches).coachId);
       },
       error: (err) => {
         this.pageErrorMessage.set(this.extractErrorMessage(err) || 'Unable to load sessions. Please refresh the page.');
@@ -188,7 +177,7 @@ export class Sessions implements OnInit {
     return err?.statusText || 'An unexpected error occurred.';
   }
 
-  openSessionDetails(session: Session & { coachName?: string; roomNumber?: string }) {
+  openSessionDetails(session: SessionVM) {
     this.selectedSession.set(session);
     this.showDetailModal.set(true);
   }

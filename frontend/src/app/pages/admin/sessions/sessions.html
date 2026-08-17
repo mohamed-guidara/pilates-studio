@@ -9,6 +9,7 @@
   </div>
   }
 
+  @if (!viewAsCalendar()) {
   <table class="w-full text-sm text-left border-collapse">
     <caption class="p-5 text-lg font-medium text-gray-800">
       <div class="flex items-center justify-between">
@@ -19,11 +20,19 @@
           </p>
         </div>
 
-        <button (click)="createSession()" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
-                 text-blue-600 bg-blue-100 border border-blue-300
-                 rounded-xl hover:bg-blue-200 transition-colors">
-          + Create Session
-        </button>
+        <div class="flex items-center gap-2">
+          <button (click)="toggleCalendarView()" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
+                   text-gray-700 bg-white border border-gray-300
+                   rounded-xl hover:bg-gray-100 transition-colors">
+            View as Calendar
+          </button>
+
+          <button (click)="createSession()" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
+                   text-blue-600 bg-blue-100 border border-blue-300
+                   rounded-xl hover:bg-blue-200 transition-colors">
+            + Create Session
+          </button>
+        </div>
       </div>
     </caption>
 
@@ -80,6 +89,20 @@
       }
     </tbody>
   </table>
+  } @else {
+  <div class="p-5">
+    <div class="flex justify-end mb-4">
+      <button (click)="toggleCalendarView()" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
+              text-gray-700 bg-white border border-gray-300
+              rounded-xl hover:bg-gray-100 transition-colors">
+        View as Table
+      </button>
+    </div>
+
+    <app-session-calendar [sessions]="sessions()" [isAdmin]="true" [myCoachId]="myCoachId()"
+      (createSessionRequested)="createSession()"></app-session-calendar>
+  </div>
+  }
 </div>
 
 @if (showCreateModal()) {

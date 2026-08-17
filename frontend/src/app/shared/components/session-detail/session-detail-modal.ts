@@ -68,7 +68,10 @@ export class SessionDetailModal implements OnChanges {
         this.actualReservationsNumber.set(actualReservations.length);
 
         const sessionReservationIds = new Set(sessionReservations.map((r) => r.reservationId));
-        const sessionWaitings = waitings.filter((w) => sessionReservationIds.has(w.reservationId));
+        // the waitings must be checked
+        const sessionWaitings = waitings.filter(
+          (w) => w.reservationId !== null && sessionReservationIds.has(w.reservationId)
+        );
         this.waitingList.set(
           sessionWaitings.map((w) => ({ ...w, clientName: resolveClientName(w.clientId) }))
         );

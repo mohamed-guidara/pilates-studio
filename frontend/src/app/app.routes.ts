@@ -20,6 +20,7 @@ import { UpdateSession } from './shared/components/update-session/update-session
 import { Reservations } from './pages/admin/reservations/reservations';
 import { Payments } from './pages/admin/payments/payments';
 import { Waitings } from './pages/admin/waitings/waitings';
+import { CoachSessions } from './pages/coach/sessions/sessions';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -45,6 +46,6 @@ export const routes: Routes = [
       { path: 'waitings', component: Waitings },
     ],
   },
-  { path: 'coach', component: CoachDashboard },
+  { path: 'coach', component: CoachSessions},
   { path: 'client', component: ClientDashboard },
 ];

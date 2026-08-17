@@ -1,0 +1,207 @@
+<div class="relative bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+
+  <!-- Toolbar -->
+  <div class="flex flex-wrap items-center justify-between gap-3 p-5">
+    <div class="flex flex-col items-start">
+      <span class="text-lg font-medium text-gray-800">{{ isAdmin ? 'All Sessions' : 'My Schedule' }}</span>
+      <span class="mt-1 text-sm text-gray-600">{{ visibleRangeLabel() }}</span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <label class="flex items-center gap-2 text-sm text-gray-600 mr-2 select-none">
+        <input type="checkbox" [checked]="showOnlyMine()" (change)="toggleShowOnlyMine()" class="cursor-pointer" />
+        Show only my sessions
+      </label>
+
+      <div class="flex items-center rounded-xl border border-gray-300 overflow-hidden text-sm">
+        <button (click)="goPrev()" class="cursor-pointer px-3 py-2 hover:bg-gray-100">‹</button>
+        <button (click)="goToday()" class="cursor-pointer px-3 py-2 border-x border-gray-300 hover:bg-gray-100">Today</button>
+        <button (click)="goNext()" class="cursor-pointer px-3 py-2 hover:bg-gray-100">›</button>
+      </div>
+
+      <div class="flex items-center rounded-xl border border-gray-300 overflow-hidden text-sm">
+        @for (mode of viewModes; track mode) {
+        <button
+          (click)="setViewMode(mode)"
+          class="cursor-pointer px-3 py-2 capitalize"
+          [class.bg-blue-100]="viewMode() === mode"
+          [class.text-blue-700]="viewMode() === mode"
+          [class.hover:bg-gray-100]="viewMode() !== mode"
+        >
+          {{ mode }}
+        </button>
+        }
+      </div>
+
+      @if (isAdmin) {
+      <button
+        (click)="requestCreate()"
+        class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-300 rounded-xl hover:bg-blue-200 transition-colors"
+      >
+        + New Session
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Category color legend -->
+  <div class="flex flex-wrap items-center gap-3 px-5 pb-4 text-xs text-gray-600">
+    @for (cat of categoryLegend; track cat) {
+    <span class="inline-flex items-center gap-1.5">
+      <span class="h-2.5 w-2.5 rounded-full" [style.background-color]="categoryColor(cat).border"></span>
+      {{ cat | sessionCategory }}
+    </span>
+    }
+  </div>
+
+  <!-- Month view -->
+  @if (viewMode() === 'month') {
+  <div class="grid grid-cols-7 border-t border-gray-200 text-xs font-medium text-gray-500 bg-gray-100">
+    @for (label of ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; track label) {
+    <div class="px-2 py-2 text-center">{{ label }}</div>
+    }
+  </div>
+  @for (week of monthWeeks(); track $index) {
+  <div class="grid grid-cols-7 border-t border-gray-200">
+    @for (day of week; track day.getTime()) {
+    <div
+      class="min-h-[110px] border-l border-gray-200 p-1.5 align-top"
+      [class.bg-gray-100]="!isSameMonth(day)"
+      [class.bg-blue-50]="isToday(day)"
+    >
+      <div class="text-xs mb-1" [class.text-gray-400]="!isSameMonth(day)" [class.font-semibold]="isToday(day)">
+        {{ day.getDate() }}
+      </div>
+      <div class="flex flex-col gap-1">
+        @for (session of sessionsForDate(day).slice(0, 3); track session.sessionId) {
+        <button
+          (click)="openDetails(session)"
+          class="cursor-pointer text-left text-[11px] leading-tight px-1.5 py-1 rounded-md truncate border"
+          [style.background-color]="categoryColor(session.category).bg"
+          [style.border-color]="categoryColor(session.category).border"
+          [style.color]="categoryColor(session.category).text"
+        >
+          {{ session.startTime | slice:0:5 }} · {{ session.category | sessionCategory }}
+        </button>
+        }
+        @if (sessionsForDate(day).length > 3) {
+        <button (click)="goToDayView(day)" class="cursor-pointer text-[11px] text-gray-500 hover:underline text-left">
+          +{{ sessionsForDate(day).length - 3 }} more
+        </button>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
+  }
+
+  <!-- Week view: hour-row grid with chips, avoids stacked/overlapping blocks -->
+  @if (viewMode() === 'week') {
+  <div class="flex border-t border-gray-200">
+    <div class="w-14 shrink-0">
+      <div class="h-8 border-b border-gray-200"></div>
+      @for (hour of hours; track hour) {
+      <div class="h-[60px] border-t border-gray-100 text-right pr-2 text-[11px] text-gray-400 -translate-y-2">{{ hourLabel(hour) }}</div>
+      }
+    </div>
+
+    <div class="flex-1 grid" [style.grid-template-columns]="'repeat(7, minmax(0, 1fr))'">
+      @for (day of weekDays(); track day.getTime()) {
+      <div class="border-l border-gray-200">
+        <div class="h-8 border-b border-gray-200 flex items-center justify-center text-xs font-medium"
+             [class.text-blue-700]="isToday(day)">
+          {{ day.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }) }}
+        </div>
+
+        @for (hour of hours; track hour) {
+        <div class="h-[60px] border-t border-gray-100 p-0.5 overflow-hidden">
+          <div class="flex flex-col gap-0.5">
+            @for (session of hourCellSessions(day, hour).slice(0, 2); track session.sessionId) {
+            <button
+              (click)="openDetails(session)"
+              class="cursor-pointer text-left text-[10px] leading-tight px-1 py-0.5 rounded truncate border"
+              [style.background-color]="categoryColor(session.category).bg"
+              [style.border-color]="categoryColor(session.category).border"
+              [style.color]="categoryColor(session.category).text"
+            >
+              {{ session.startTime | slice:0:5 }} {{ session.category | sessionCategory }}
+            </button>
+            }
+            @if (hourCellSessions(day, hour).length > 2) {
+            <button (click)="goToDayView(day)" class="cursor-pointer text-[10px] text-gray-500 hover:underline text-left">
+              +{{ hourCellSessions(day, hour).length - 2 }} more
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Day view: precise timeline, percentage-based blocks side-by-side for overlaps -->
+  @if (viewMode() === 'day') {
+  <div class="flex min-w-0 border-t border-gray-200">
+    <div class="w-14 shrink-0">
+      <div class="h-8 border-b border-gray-200"></div>
+      @for (hour of hours; track hour) {
+      <div class="h-[60px] text-right pr-2 text-[11px] text-gray-400 -translate-y-2">{{ hourLabel(hour) }}</div>
+      }
+    </div>
+
+    <div class="flex-1 min-w-0 overflow-hidden">
+      <div class="h-8 border-b border-gray-200"></div>
+      <div
+        class="relative w-full"
+        [style.height.px]="gridHeightPx()"
+      >
+        @for (hour of hours; track hour) {
+        <div class="absolute left-0 right-0 border-t border-gray-100" [style.top.px]="(hour - hours[0]) * 60"></div>
+        }
+
+        @for (item of layoutForDate(currentDate()); track item.session.sessionId) {
+        <div
+          class="absolute rounded-lg overflow-hidden border shadow-sm"
+          [style.top.px]="sessionTopPx(item.session)"
+          [style.height.px]="sessionHeightPx(item.session)"
+          [style.left.%]="sessionLeftPercent(item)"
+          [style.width.%]="sessionWidthPercent(item)"
+          [style.background-color]="categoryColor(item.session.category).bg"
+          [style.border-color]="categoryColor(item.session.category).border"
+        >
+          <button
+            (click)="openDetails(item.session)"
+            class="cursor-pointer w-full h-full text-left px-2 py-1.5 text-[11px] leading-tight"
+            [style.color]="categoryColor(item.session.category).text"
+          >
+            <div class="font-semibold truncate">{{ item.session.category | sessionCategory }}</div>
+            <div class="truncate">{{ item.session.startTime | slice:0:5 }}–{{ item.session.endTime | slice:0:5 }}</div>
+            <div class="truncate text-[10px] opacity-80">{{ item.session.coachName ?? '—' }}</div>
+            <div class="truncate text-[10px] opacity-80">{{ item.session.reservedCount }}/{{ item.session.places }} booked</div>
+          </button>
+
+          @if (isAdmin) {
+          <a
+            [routerLink]="['/admin/sessions/update', item.session.sessionId]"
+            (click)="$event.stopPropagation()"
+            class="cursor-pointer absolute top-1 right-1 text-[10px] px-1 py-0.5 rounded bg-white/70 hover:bg-white"
+            [style.color]="categoryColor(item.session.category).text"
+            title="Edit session"
+          >
+            ✎
+          </a>
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+</div>
+
+<!-- Reuses the existing session-detail-modal for both roles -->
+<session-detail-modal [show]="showDetailModal" [session]="selectedSession()" (close)="closeDetails()">
+</session-detail-modal>
