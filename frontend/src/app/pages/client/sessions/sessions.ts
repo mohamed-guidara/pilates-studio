@@ -11,12 +11,25 @@ import { ClientService } from '../../../services/clientService.service';
 
 import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
 import { SessionCalendar } from '../../../shared/components/session-calendar/session-calendar';
+import { SessionBookingModal } from '../../../shared/components/session-booking/session-booking-modal';
 import { SessionVM, enrichSessions, resolveCurrentClient } from '../../../shared/utils/session-enrichment.util';
+import { categoryColor } from '../../../shared/utils/category-color.util';
+import { SessionLevelPipe } from '../../../assets/session-level-pipe';
+import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
+
+type ClientViewMode = 'list' | 'calendar';
 
 @Component({
   selector: 'app-client-sessions',
   standalone: true,
-  imports: [CommonModule, FeedbackMessage, SessionCalendar],
+  imports: [
+    CommonModule,
+    FeedbackMessage,
+    SessionCalendar,
+    SessionBookingModal,
+    SessionLevelPipe,
+    SessionCategoryPipe,
+  ],
   templateUrl: './sessions.html',
   styleUrl: './sessions.css',
 })
@@ -25,6 +38,13 @@ export class ClientSessions implements OnInit {
   pageErrorMessage = signal<string | null>(null);
   sessions = signal<SessionVM[]>([]);
   clientId = signal<number | null>(null);
+
+  viewMode = signal<ClientViewMode>('list');
+
+  showBookingModal = signal(false);
+  selectedSession = signal<SessionVM | null>(null);
+
+  categoryColor = categoryColor;
 
   constructor(
     private sessionService: SessionService,
@@ -62,5 +82,43 @@ export class ClientSessions implements OnInit {
           console.error('Error loading client sessions:', err);
         },
       });
+  }
+
+  setViewMode(mode: ClientViewMode): void {
+    this.viewMode.set(mode);
+  }
+
+  // ---------- List view: every session today or later, soonest first ----------
+
+  private todayKey(): string {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  upcomingSessions(): SessionVM[] {
+    const today = this.todayKey();
+    return this.sessions()
+      .filter((s) => s.date >= today)
+      .sort((a, b) => (a.date === b.date ? a.startTime.localeCompare(b.startTime) : a.date.localeCompare(b.date)));
+  }
+
+  formatSessionDate(dateStr: string): string {
+    // dateStr is 'YYYY-MM-DD'; parse as local date to avoid timezone drift.
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  // ---------- Booking modal ----------
+
+  openBooking(session: SessionVM): void {
+    this.selectedSession.set(session);
+    this.showBookingModal.set(true);
+  }
+
+  closeBooking(): void {
+    this.showBookingModal.set(false);
   }
 }

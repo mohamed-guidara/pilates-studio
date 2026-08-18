@@ -3,10 +3,11 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { RouterLink } from '@angular/router';
 
 import { SessionDetailModal } from '../session-detail/session-detail-modal';
+import { SessionBookingModal } from '../session-booking/session-booking-modal';
 import { SessionLevelPipe } from '../../../assets/session-level-pipe';
 import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
 import { SessionVM } from '../../utils/session-enrichment.util';
-import { SessionBookingModal } from '../session-booking/session-booking-modal';
+import { CATEGORY_COLORS, categoryColor as sharedCategoryColor, CategoryColor } from '../../utils/category-color.util';
 
 export type CalendarViewMode = 'day' | 'week' | 'month';
 export type CalendarRole = 'admin' | 'coach' | 'client';
@@ -17,23 +18,6 @@ const HOUR_HEIGHT_PX = 60;
 const DAY_BLOCK_WIDTH_PX = 220;
 const DAY_BLOCK_GAP_PX = 10;
 
-interface CategoryColor {
-  bg: string;
-  border: string;
-  text: string;
-}
-
-// One color per session category (1-5, matching the options used in
-// create-session-modal / update-session). Add more entries here if you add categories.
-export const CATEGORY_COLORS: Record<number, CategoryColor> = {
-  1: { bg: '#DBEAFE', border: '#93C5FD', text: '#1D4ED8' }, // blue
-  2: { bg: '#EDE9FE', border: '#C4B5FD', text: '#6D28D9' }, // purple
-  3: { bg: '#D1FAE5', border: '#6EE7B7', text: '#047857' }, // emerald
-  4: { bg: '#FEF3C7', border: '#FCD34D', text: '#B45309' }, // amber
-  5: { bg: '#FFE4E6', border: '#FDA4AF', text: '#BE123C' }, // rose
-};
-const DEFAULT_COLOR: CategoryColor = { bg: '#F3F4F6', border: '#D1D5DB', text: '#374151' };
-
 interface DayLayoutItem {
   session: SessionVM;
   col: number;
@@ -43,7 +27,7 @@ interface DayLayoutItem {
 @Component({
   selector: 'app-session-calendar',
   standalone: true,
-  imports: [CommonModule, RouterLink, SessionDetailModal, SessionBookingModal, SessionCategoryPipe],
+  imports: [CommonModule, RouterLink, SessionDetailModal, SessionBookingModal, SessionLevelPipe, SessionCategoryPipe],
   templateUrl: './session-calendar.html',
   styleUrl: './session-calendar.css',
 })
@@ -101,7 +85,7 @@ export class SessionCalendar implements OnInit, OnChanges {
   // ---------- Colors ----------
 
   categoryColor(category: number): CategoryColor {
-    return CATEGORY_COLORS[category] ?? DEFAULT_COLOR;
+    return sharedCategoryColor(category);
   }
 
   // ---------- Navigation ----------

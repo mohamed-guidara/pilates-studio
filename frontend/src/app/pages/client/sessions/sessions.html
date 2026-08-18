@@ -9,5 +9,79 @@
   <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
 </div>
 } @else {
+
+<div class="flex justify-end mb-4">
+  <div class="flex items-center rounded-xl border border-gray-300 overflow-hidden text-sm">
+    <button
+      (click)="setViewMode('list')"
+      class="cursor-pointer px-4 py-2"
+      [class.bg-blue-100]="viewMode() === 'list'"
+      [class.text-blue-700]="viewMode() === 'list'"
+      [class.hover:bg-gray-100]="viewMode() !== 'list'"
+    >
+      List
+    </button>
+    <button
+      (click)="setViewMode('calendar')"
+      class="cursor-pointer px-4 py-2 border-l border-gray-300"
+      [class.bg-blue-100]="viewMode() === 'calendar'"
+      [class.text-blue-700]="viewMode() === 'calendar'"
+      [class.hover:bg-gray-100]="viewMode() !== 'calendar'"
+    >
+      Calendar
+    </button>
+  </div>
+</div>
+
+@if (viewMode() === 'list') {
+<div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+  <div class="px-5 py-4 border-b border-gray-200">
+    <span class="text-lg font-medium text-gray-800">Upcoming Sessions</span>
+  </div>
+
+  <div class="divide-y divide-gray-200">
+    @for (session of upcomingSessions(); track session.sessionId) {
+    <button
+      (click)="openBooking(session)"
+      class="cursor-pointer w-full text-left flex items-center justify-between gap-4 px-5 py-4 hover:bg-gray-100 transition-colors"
+    >
+      <div class="flex items-start gap-3 min-w-0">
+        <span
+          class="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0"
+          [style.background-color]="categoryColor(session.category).border"
+        ></span>
+        <div class="min-w-0">
+          <div class="font-semibold text-gray-800 truncate">{{ session.category | sessionCategory }}</div>
+          <div class="text-sm text-gray-500">
+            {{ formatSessionDate(session.date) }} · {{ session.startTime | slice:0:5 }} – {{ session.endTime | slice:0:5 }}
+          </div>
+          <div class="text-sm text-gray-500 mt-1 truncate">{{ session.coachName ?? '—' }}</div>
+        </div>
+      </div>
+
+      <span
+        class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+        [style.background-color]="categoryColor(session.category).bg"
+        [style.border-color]="categoryColor(session.category).border"
+        [style.color]="categoryColor(session.category).text"
+      >
+        {{ session.reservedCount }}/{{ session.places }}
+      </span>
+    </button>
+    } @empty {
+    <div class="px-5 py-10 text-center text-sm text-gray-500">No upcoming sessions.</div>
+    }
+  </div>
+</div>
+} @else {
 <app-session-calendar [sessions]="sessions()" role="client" [clientId]="clientId()"></app-session-calendar>
 }
+}
+
+<session-booking-modal
+  [show]="showBookingModal"
+  [session]="selectedSession()"
+  [clientId]="clientId()"
+  (close)="closeBooking()"
+>
+</session-booking-modal>
