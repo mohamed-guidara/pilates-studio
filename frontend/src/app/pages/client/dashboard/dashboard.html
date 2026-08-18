@@ -1,1 +1,32 @@
-<p>client dashboard works!</p>
+<div class="flex min-h-screen">
+  <app-sidebar [navItems]="navItems" homeLink="/client" title="Client Panel"></app-sidebar>
+
+  <main class="flex-1 ml-64 min-h-screen">
+    <div class="flex justify-end items-center gap-3 px-6 py-4 border-b border-gray-200 bg-white">
+      <button
+        (click)="toggleNotifications()"
+        class="cursor-pointer relative p-2 rounded-full hover:bg-gray-100 text-gray-600"
+        title="Notifications"
+      >
+        🔔
+      </button>
+    </div>
+
+    <div class="p-6">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
+
+@if (showNotifications()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="toggleNotifications()">
+  <div class="w-full max-w-sm bg-white rounded-xl shadow-lg border border-gray-200 p-6" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-medium text-gray-800">Notifications</h2>
+      <button (click)="toggleNotifications()" class="cursor-pointer text-gray-400 hover:text-gray-600">✕</button>
+    </div>
+    <!-- Placeholder — wire this up to the real notifications feed when it's built. -->
+    <p class="text-sm text-gray-500">No notifications yet.</p>
+  </div>
+</div>
+}

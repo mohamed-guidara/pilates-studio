@@ -61,7 +61,6 @@ export class Waitings implements OnInit {
       waitings: this.waitingService.getWaitings(),
       clients: this.clientService.getClients(),
       persons: this.personsService.getPersons(),
-      reservations: this.reservationService.getReservations(),
       sessions: this.sessionService.getSessions(),
       coaches: this.coachService.getCoaches(),
       rooms: this.roomService.getRooms(),
@@ -71,15 +70,14 @@ export class Waitings implements OnInit {
         this.cdr.detectChanges();
       }),
     ).subscribe({
-      next: ({ waitings, clients, persons, reservations, sessions, coaches, rooms }) => {
+      next: ({ waitings, clients, persons, sessions, coaches, rooms }) => {
         this.waitings.set(
           [...waitings]
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .map((waiting) => {
               const client = clients.find((c) => c.clientId === waiting.clientId);
               const person = client ? persons.find((p) => p.personId === client.personId) : undefined;
-              const reservation = reservations.find((r) => r.reservationId === waiting.reservationId);
-              const session = reservation ? sessions.find((s) => s.sessionId === reservation.sessionId) : undefined;
+              const session = sessions.find((s) => s.sessionId === waiting.sessionId);
               const coach = session ? coaches.find((c) => c.coachId === session.coachId) : undefined;
               const coachPerson = coach ? persons.find((p) => p.personId === coach.personId) : undefined;
               const room = session ? rooms.find((r) => r.roomId === session.roomId) : undefined;

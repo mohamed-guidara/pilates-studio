@@ -14,12 +14,18 @@ class Waiting extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
+        'sessionId',
         'reservationId',
         'clientId',
         'status',
     ];
 
     // Relationships
+    public function session()
+    {
+        return $this->belongsTo(Session::class, 'sessionId', 'sessionId');
+    }
+
     public function reservation()
     {
         return $this->belongsTo(Reservation::class, 'reservationId', 'reservationId');

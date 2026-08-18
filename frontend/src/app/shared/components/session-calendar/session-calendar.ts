@@ -6,14 +6,16 @@ import { SessionDetailModal } from '../session-detail/session-detail-modal';
 import { SessionLevelPipe } from '../../../assets/session-level-pipe';
 import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
 import { SessionVM } from '../../utils/session-enrichment.util';
+import { SessionBookingModal } from '../session-booking/session-booking-modal';
 
 export type CalendarViewMode = 'day' | 'week' | 'month';
+export type CalendarRole = 'admin' | 'coach' | 'client';
 
 const START_HOUR = 7;
 const END_HOUR = 22;
 const HOUR_HEIGHT_PX = 60;
-// Changed from fixed pixels to a small percentage gap between overlapping columns
-const DAY_BLOCK_GAP_PERCENT = 0.5;
+const DAY_BLOCK_WIDTH_PX = 220;
+const DAY_BLOCK_GAP_PX = 10;
 
 interface CategoryColor {
   bg: string;
@@ -41,17 +43,20 @@ interface DayLayoutItem {
 @Component({
   selector: 'app-session-calendar',
   standalone: true,
-  imports: [CommonModule, RouterLink, SessionDetailModal, SessionLevelPipe, SessionCategoryPipe],
+  imports: [CommonModule, RouterLink, SessionDetailModal, SessionBookingModal, SessionCategoryPipe],
   templateUrl: './session-calendar.html',
   styleUrl: './session-calendar.css',
 })
 export class SessionCalendar implements OnInit, OnChanges {
   /** Already-enriched sessions (coachName/roomNumber/reservedCount) from the host page. */
   @Input() sessions: SessionVM[] = [];
-  /** True for the admin page (full CRUD except delete); false/omitted for coaches (read-only). */
-  @Input() isAdmin = false;
-  /** The logged-in coach's coachId, used by the "show only my sessions" filter. */
+  /** 'admin' = full CRUD (minus delete) + "show only mine" filter. 'coach' = read-only + same filter.
+   *  'client' = read-only, no filter, clicking a session opens the booking modal instead of the detail modal. */
+  @Input() role: CalendarRole = 'admin';
+  /** The logged-in coach's coachId, used by the "show only my sessions" filter (admin/coach only). */
   @Input() myCoachId: number | null = null;
+  /** The logged-in client's clientId, passed through to the booking modal (client only). */
+  @Input() clientId: number | null = null;
 
   /** Admin only: parent should open its existing create-session modal in response. */
   @Output() createSessionRequested = new EventEmitter<void>();
@@ -61,6 +66,7 @@ export class SessionCalendar implements OnInit, OnChanges {
   showOnlyMine = signal(false);
 
   showDetailModal = signal(false);
+  showBookingModal = signal(false);
   selectedSession = signal<SessionVM | null>(null);
 
   hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
@@ -68,12 +74,12 @@ export class SessionCalendar implements OnInit, OnChanges {
   viewModes: CalendarViewMode[] = ['day', 'week', 'month'];
 
   ngOnInit(): void {
-    this.showOnlyMine.set(!this.isAdmin);
+    this.showOnlyMine.set(this.role === 'coach');
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isAdmin'] && !changes['isAdmin'].firstChange) {
-      this.showOnlyMine.set(!this.isAdmin);
+    if (changes['role'] && !changes['role'].firstChange) {
+      this.showOnlyMine.set(this.role === 'coach');
     }
   }
 
@@ -86,7 +92,7 @@ export class SessionCalendar implements OnInit, OnChanges {
   }
 
   private scopedSessions(): SessionVM[] {
-    if (this.showOnlyMine() && this.myCoachId !== null) {
+    if (this.role !== 'client' && this.showOnlyMine() && this.myCoachId !== null) {
       return this.sessions.filter((s) => s.coachId === this.myCoachId);
     }
     return this.sessions;
@@ -279,25 +285,36 @@ export class SessionCalendar implements OnInit, OnChanges {
     this.viewMode.set('day');
   }
 
-  // ---------- Day view: percentage-based blocks, side-by-side for overlaps ----------
+  // ---------- Day view: fixed-width blocks, side-by-side for overlaps ----------
 
-  sessionLeftPercent(item: DayLayoutItem): number {
-    const columnWidth = (100 - (item.colCount - 1) * DAY_BLOCK_GAP_PERCENT) / item.colCount;
-    return item.col * (columnWidth + DAY_BLOCK_GAP_PERCENT);
+  readonly dayBlockWidthPx = DAY_BLOCK_WIDTH_PX;
+
+  dayColumnWidthPx(date: Date): number {
+    const layout = this.layoutForDate(date);
+    const colCount = layout[0]?.colCount ?? 1;
+    return colCount * (DAY_BLOCK_WIDTH_PX + DAY_BLOCK_GAP_PX);
   }
 
-  sessionWidthPercent(item: DayLayoutItem): number {
-    return (100 - (item.colCount - 1) * DAY_BLOCK_GAP_PERCENT) / item.colCount;
+  sessionLeftPx(item: DayLayoutItem): number {
+    return item.col * (DAY_BLOCK_WIDTH_PX + DAY_BLOCK_GAP_PX);
   }
 
-  // ---------- Detail modal (reuses the existing session-detail-modal) ----------
+  // ---------- Session click: detail modal (admin/coach) or booking modal (client) ----------
 
   openDetails(session: SessionVM): void {
     this.selectedSession.set(session);
-    this.showDetailModal.set(true);
+    if (this.role === 'client') {
+      this.showBookingModal.set(true);
+    } else {
+      this.showDetailModal.set(true);
+    }
   }
 
   closeDetails(): void {
     this.showDetailModal.set(false);
+  }
+
+  closeBooking(): void {
+    this.showBookingModal.set(false);
   }
 }

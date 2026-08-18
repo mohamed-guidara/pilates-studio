@@ -93,14 +93,18 @@
   <div class="p-5">
     <div class="flex justify-end mb-4">
       <button (click)="toggleCalendarView()" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
-              text-gray-700 bg-white border border-gray-300
-              rounded-xl hover:bg-gray-100 transition-colors">
+               text-gray-700 bg-white border border-gray-300
+               rounded-xl hover:bg-gray-100 transition-colors">
         View as Table
       </button>
     </div>
 
-    <app-session-calendar [sessions]="sessions()" [isAdmin]="true" [myCoachId]="myCoachId()"
-      (createSessionRequested)="createSession()"></app-session-calendar>
+    <app-session-calendar
+      [sessions]="sessions()"
+      role="admin"
+      [myCoachId]="myCoachId()"
+      (createSessionRequested)="createSession()"
+    ></app-session-calendar>
   </div>
   }
 </div>

@@ -1,0 +1,86 @@
+@if (show()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-lg overflow-hidden rounded-xl bg-white p-6 shadow-2xl max-h-[85vh] flex flex-col">
+    <div class="flex items-start justify-between mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Session Details</h2>
+      <button (click)="closeModal()" class="cursor-pointer text-gray-400 hover:text-gray-600">✕</button>
+    </div>
+
+    @if (session) {
+    <dl class="grid grid-cols-2 gap-y-2 text-sm mb-6">
+      <dt class="text-gray-500">Category</dt>
+      <dd class="text-gray-800">{{ session.category | sessionCategory }}</dd>
+      <dt class="text-gray-500">Level</dt>
+      <dd class="text-gray-800">{{ session.level | sessionLevel }}</dd>
+      <dt class="text-gray-500">Date</dt>
+      <dd class="text-gray-800">{{ session.date }}</dd>
+      <dt class="text-gray-500">Time</dt>
+      <dd class="text-gray-800">{{ session.startTime | slice:0:5 }} – {{ session.endTime | slice:0:5 }}</dd>
+      <dt class="text-gray-500">Coach</dt>
+      <dd class="text-gray-800">{{ session.coachName ?? '—' }}</dd>
+      <dt class="text-gray-500">Room</dt>
+      <dd class="text-gray-800">{{ session.roomNumber ?? '—' }}</dd>
+      <dt class="text-gray-500">Price</dt>
+      <dd class="text-gray-800">{{ session.price }}</dd>
+      <dt class="text-gray-500">Places</dt>
+      <dd class="text-gray-800">{{ session.reservedCount }}/{{ session.places }}</dd>
+    </dl>
+    }
+
+    @if (errorMessage()) {
+    <p class="text-sm text-red-600 mb-4">{{ errorMessage() }}</p>
+    }
+
+    @if (isLoading()) {
+    <div class="flex justify-center py-6">
+      <div class="h-6 w-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    } @else if (myReservation()) {
+    @if (myReservation()!.status === 2) {
+    <div class="px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700">
+      You're booked for this session.
+    </div>
+    } @else {
+    <div class="px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-200 text-sm text-yellow-700 flex items-center justify-between gap-3">
+      <span>You have a pending reservation — payment isn't complete yet.</span>
+      <button
+        (click)="goToPayment()"
+        class="cursor-pointer shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-yellow-600 text-white hover:bg-yellow-700"
+      >
+        Continue to payment
+      </button>
+    </div>
+    }
+    } @else if (myWaiting()) {
+    <div class="px-4 py-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-700">
+      You're on the waiting list for this session. You'll be notified if a place opens up.
+    </div>
+    } @else if (clientId === null) {
+    <!-- errorMessage above already explains why booking isn't available -->
+    } @else {
+    <div class="flex gap-3">
+      <button
+        (click)="bookPlace()"
+        [disabled]="isFull || isSubmitting()"
+        class="flex-1 px-4 py-2 rounded-lg font-medium text-white transition-colors bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+      >
+        {{ isSubmitting() ? 'Booking…' : 'Book a place' }}
+      </button>
+
+      @if (isFull) {
+      <button
+        (click)="joinWaitingList()"
+        [disabled]="isSubmitting()"
+        class="flex-1 px-4 py-2 rounded-lg font-medium text-blue-700 bg-blue-100 border border-blue-300 hover:bg-blue-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {{ isSubmitting() ? 'Joining…' : 'Join waiting list' }}
+      </button>
+      }
+    </div>
+    @if (isFull) {
+    <p class="text-xs text-gray-500 mt-2">This session is full — booking is disabled, but you can join the waiting list.</p>
+    }
+    }
+  </div>
+</div>
+}

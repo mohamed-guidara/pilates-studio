@@ -1,1 +1,13 @@
-<p>sessions works!</p>
+@if (pageErrorMessage()) {
+<div class="mb-4">
+  <feedback-message [message]="pageErrorMessage()" type="error"></feedback-message>
+</div>
+}
+
+@if (isLoading()) {
+<div class="flex justify-center items-center py-16">
+  <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+</div>
+} @else {
+<app-session-calendar [sessions]="sessions()" role="client" [clientId]="clientId()"></app-session-calendar>
+}

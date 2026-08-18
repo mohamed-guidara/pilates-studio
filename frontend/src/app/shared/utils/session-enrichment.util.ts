@@ -3,6 +3,7 @@ import { Coach } from '../models/coach.model';
 import { Person } from '../models/person.model';
 import { Room } from '../models/room.model';
 import { Reservation } from '../models/reservation.model';
+import { Client } from '../models/client.model';
 
 export type SessionVM = Session & {
   coachName?: string;
@@ -63,4 +64,12 @@ export function resolveCurrentCoach(coaches: Coach[]): { coachId: number | null;
     coachId: coach ? coach.coachId : null,
     isAdmin: coach ? coach.isAdmin === 1 : false,
   };
+}
+
+/** Resolves the logged-in person's clientId from localStorage's 'personId'. */
+export function resolveCurrentClient(clients: Client[]): number | null {
+  const stored = localStorage.getItem('personId');
+  const personId = stored ? Number(stored) : null;
+  const client = personId !== null ? clients.find((c) => c.personId === personId) : undefined;
+  return client ? client.clientId : null;
 }

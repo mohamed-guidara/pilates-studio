@@ -3,15 +3,19 @@
   <!-- Toolbar -->
   <div class="flex flex-wrap items-center justify-between gap-3 p-5">
     <div class="flex flex-col items-start">
-      <span class="text-lg font-medium text-gray-800">{{ isAdmin ? 'All Sessions' : 'My Schedule' }}</span>
+      <span class="text-lg font-medium text-gray-800">
+        {{ role === 'admin' ? 'All Sessions' : role === 'coach' ? 'My Schedule' : 'Sessions' }}
+      </span>
       <span class="mt-1 text-sm text-gray-600">{{ visibleRangeLabel() }}</span>
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
+      @if (role !== 'client') {
       <label class="flex items-center gap-2 text-sm text-gray-600 mr-2 select-none">
         <input type="checkbox" [checked]="showOnlyMine()" (change)="toggleShowOnlyMine()" class="cursor-pointer" />
         Show only my sessions
       </label>
+      }
 
       <div class="flex items-center rounded-xl border border-gray-300 overflow-hidden text-sm">
         <button (click)="goPrev()" class="cursor-pointer px-3 py-2 hover:bg-gray-100">‹</button>
@@ -33,7 +37,7 @@
         }
       </div>
 
-      @if (isAdmin) {
+      @if (role === 'admin') {
       <button
         (click)="requestCreate()"
         class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-300 rounded-xl hover:bg-blue-200 transition-colors"
@@ -142,7 +146,7 @@
   </div>
   }
 
-  <!-- Day view: precise timeline, percentage-based blocks side-by-side for overlaps -->
+  <!-- Day view: precise timeline, fixed-width blocks side-by-side for overlaps -->
   @if (viewMode() === 'day') {
   <div class="flex min-w-0 border-t border-gray-200">
     <div class="w-14 shrink-0">
@@ -152,11 +156,12 @@
       }
     </div>
 
-    <div class="flex-1 min-w-0 overflow-hidden">
+    <div class="flex-1 min-w-0 overflow-x-auto">
       <div class="h-8 border-b border-gray-200"></div>
       <div
-        class="relative w-full"
+        class="relative"
         [style.height.px]="gridHeightPx()"
+        [style.min-width.px]="dayColumnWidthPx(currentDate())"
       >
         @for (hour of hours; track hour) {
         <div class="absolute left-0 right-0 border-t border-gray-100" [style.top.px]="(hour - hours[0]) * 60"></div>
@@ -167,27 +172,27 @@
           class="absolute rounded-lg overflow-hidden border shadow-sm"
           [style.top.px]="sessionTopPx(item.session)"
           [style.height.px]="sessionHeightPx(item.session)"
-          [style.left.%]="sessionLeftPercent(item)"
-          [style.width.%]="sessionWidthPercent(item)"
+          [style.left.px]="sessionLeftPx(item)"
+          [style.width.px]="dayBlockWidthPx"
           [style.background-color]="categoryColor(item.session.category).bg"
           [style.border-color]="categoryColor(item.session.category).border"
         >
           <button
             (click)="openDetails(item.session)"
-            class="cursor-pointer w-full h-full text-left px-2 py-1.5 text-[11px] leading-tight"
+            class="cursor-pointer w-full h-full text-left px-3 py-2 text-xs leading-tight"
             [style.color]="categoryColor(item.session.category).text"
           >
             <div class="font-semibold truncate">{{ item.session.category | sessionCategory }}</div>
             <div class="truncate">{{ item.session.startTime | slice:0:5 }}–{{ item.session.endTime | slice:0:5 }}</div>
-            <div class="truncate text-[10px] opacity-80">{{ item.session.coachName ?? '—' }}</div>
-            <div class="truncate text-[10px] opacity-80">{{ item.session.reservedCount }}/{{ item.session.places }} booked</div>
+            <div class="truncate">{{ item.session.coachName ?? '—' }}</div>
+            <div class="truncate">{{ item.session.reservedCount }}/{{ item.session.places }} booked</div>
           </button>
 
-          @if (isAdmin) {
+          @if (role === 'admin') {
           <a
             [routerLink]="['/admin/sessions/update', item.session.sessionId]"
             (click)="$event.stopPropagation()"
-            class="cursor-pointer absolute top-1 right-1 text-[10px] px-1 py-0.5 rounded bg-white/70 hover:bg-white"
+            class="cursor-pointer absolute top-1 right-1 text-[10px] px-1.5 py-0.5 rounded bg-white/70 hover:bg-white"
             [style.color]="categoryColor(item.session.category).text"
             title="Edit session"
           >
@@ -202,6 +207,10 @@
   }
 </div>
 
-<!-- Reuses the existing session-detail-modal for both roles -->
+<!-- Admin/coach: reuses the existing session-detail-modal -->
 <session-detail-modal [show]="showDetailModal" [session]="selectedSession()" (close)="closeDetails()">
 </session-detail-modal>
+
+<!-- Client: booking modal -->
+<session-booking-modal [show]="showBookingModal" [session]="selectedSession()" [clientId]="clientId" (close)="closeBooking()">
+</session-booking-modal>

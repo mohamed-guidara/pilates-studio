@@ -1,8 +1,24 @@
-import { Component, signal } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/auth';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
+
+export interface SidebarNavItem {
+  to: string;
+  label: string;
+}
+
+const ADMIN_NAV_ITEMS: SidebarNavItem[] = [
+  { to: '/admin/coaches', label: 'Coaches' },
+  { to: '/admin/rooms', label: 'Rooms' },
+  { to: '/admin/equipments', label: 'Equipments' },
+  { to: '/admin/clients', label: 'Clients' },
+  { to: '/admin/sessions', label: 'Sessions' },
+  { to: '/admin/reservations', label: 'Reservations' },
+  { to: '/admin/payments', label: 'Payments' },
+  { to: '/admin/waitings', label: 'Waitings' },
+];
 
 @Component({
   selector: 'app-sidebar',
@@ -12,17 +28,10 @@ import { filter } from 'rxjs';
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
-
-  navItems = [
-    { to: '/admin/coaches', label: 'Coaches' },
-    { to: '/admin/rooms', label: 'Rooms' },
-    { to: '/admin/equipments', label: 'Equipments' },
-    { to: '/admin/clients', label: 'Clients' },
-    { to: '/admin/sessions', label: 'Sessions' },
-    { to: '/admin/reservations', label: 'Reservations' },
-    { to: '/admin/payments', label: 'Payments' },
-    { to: '/admin/waitings', label: 'Waitings' },
-  ];
+  // Defaults preserve the exact previous behavior for AdminDashboard, which passes nothing.
+  @Input() navItems: SidebarNavItem[] = ADMIN_NAV_ITEMS;
+  @Input() homeLink = '/admin';
+  @Input() title = 'Dashboard Panel';
 
   // Signal to hold the current URL
   currentUrl = signal('');

@@ -1,9 +1,66 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal } from '@angular/core';
+import { finalize, forkJoin } from 'rxjs';
+
+import { SessionService } from '../../../services/sessionService.service';
+import { CoachService } from '../../../services/coachService.service';
+import { PersonsService } from '../../../services/personService.service';
+import { RoomService } from '../../../services/roomService.service';
+import { ReservationService } from '../../../services/reservationService.service';
+import { ClientService } from '../../../services/clientService.service';
+
+import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
+import { SessionCalendar } from '../../../shared/components/session-calendar/session-calendar';
+import { SessionVM, enrichSessions, resolveCurrentClient } from '../../../shared/utils/session-enrichment.util';
 
 @Component({
-  selector: 'app-sessions',
-  imports: [],
+  selector: 'app-client-sessions',
+  standalone: true,
+  imports: [CommonModule, FeedbackMessage, SessionCalendar],
   templateUrl: './sessions.html',
   styleUrl: './sessions.css',
 })
-export class Sessions {}
+export class ClientSessions implements OnInit {
+  isLoading = signal(true);
+  pageErrorMessage = signal<string | null>(null);
+  sessions = signal<SessionVM[]>([]);
+  clientId = signal<number | null>(null);
+
+  constructor(
+    private sessionService: SessionService,
+    private coachService: CoachService,
+    private personsService: PersonsService,
+    private roomService: RoomService,
+    private reservationService: ReservationService,
+    private clientService: ClientService,
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSessions();
+  }
+
+  loadSessions(): void {
+    this.pageErrorMessage.set(null);
+    this.isLoading.set(true);
+
+    forkJoin({
+      sessions: this.sessionService.getSessions(),
+      coaches: this.coachService.getCoaches(),
+      persons: this.personsService.getPersons(),
+      rooms: this.roomService.getRooms(),
+      reservations: this.reservationService.getReservations(),
+      clients: this.clientService.getClients(),
+    })
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: ({ sessions, coaches, persons, rooms, reservations, clients }) => {
+          this.sessions.set(enrichSessions(sessions, coaches, persons, rooms, reservations));
+          this.clientId.set(resolveCurrentClient(clients));
+        },
+        error: (err) => {
+          this.pageErrorMessage.set('Unable to load sessions. Please refresh the page.');
+          console.error('Error loading client sessions:', err);
+        },
+      });
+  }
+}

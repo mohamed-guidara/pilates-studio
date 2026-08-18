@@ -19,11 +19,11 @@ export class WaitingService {
     return this.http.get<Waiting>(`${this.apiUrl}/${id}`);
   }
 
-  createWaiting(data: { reservationId: number | null; clientId: number; status: string }): Observable<Waiting> {
+  createWaiting(data: { sessionId: number; reservationId?: number | null; clientId: number; status: string }): Observable<Waiting> {
     return this.http.post<Waiting>(this.apiUrl, data);
   }
 
-  updateWaiting(id: number, data: { reservationId: number | null; clientId: number; status: string }): Observable<Waiting> {
+  updateWaiting(id: number, data: { sessionId: number; reservationId?: number | null; clientId: number; status: string }): Observable<Waiting> {
     return this.http.put<Waiting>(`${this.apiUrl}/${id}`, data);
   }
 

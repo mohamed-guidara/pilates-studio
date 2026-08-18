@@ -17,6 +17,7 @@ import { SessionVM, enrichSessions, resolveCurrentCoach } from '../../../shared/
   standalone: true,
   imports: [CommonModule, FeedbackMessage, SessionCalendar],
   templateUrl: './sessions.html',
+  styleUrl: './sessions.css',
 })
 export class CoachSessions implements OnInit {
   isLoading = signal(true);

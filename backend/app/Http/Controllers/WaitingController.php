@@ -32,6 +32,7 @@ class WaitingController extends Controller
     {
         if (Waiting::where('waitingId', $id)->exists()) {
             $waiting = Waiting::find($id);
+            $waiting->sessionId     = $request->sessionId;
             $waiting->reservationId = $request->reservationId;
             $waiting->clientId      = $request->clientId;
             $waiting->status        = $request->status;

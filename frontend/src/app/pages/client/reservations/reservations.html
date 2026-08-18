@@ -1,1 +1,33 @@
-<p>reservations works!</p>
+<div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+  <div class="flex items-center gap-2 p-5 pb-0">
+    <button
+      (click)="setTab('reservations')"
+      class="cursor-pointer px-4 py-2 text-sm font-medium rounded-t-lg border-b-2"
+      [class.border-blue-600]="activeTab() === 'reservations'"
+      [class.text-blue-700]="activeTab() === 'reservations'"
+      [class.border-transparent]="activeTab() !== 'reservations'"
+      [class.text-gray-500]="activeTab() !== 'reservations'"
+    >
+      Reservations
+    </button>
+    <button
+      (click)="setTab('waitings')"
+      class="cursor-pointer px-4 py-2 text-sm font-medium rounded-t-lg border-b-2"
+      [class.border-blue-600]="activeTab() === 'waitings'"
+      [class.text-blue-700]="activeTab() === 'waitings'"
+      [class.border-transparent]="activeTab() !== 'waitings'"
+      [class.text-gray-500]="activeTab() !== 'waitings'"
+    >
+      Waiting List
+    </button>
+  </div>
+
+  <div class="p-5">
+    <!-- Placeholder — replace with the real reservations/waitings list once that data flow is scoped. -->
+    @if (activeTab() === 'reservations') {
+    <p class="text-sm text-gray-500">Your booked sessions will show up here.</p>
+    } @else {
+    <p class="text-sm text-gray-500">Sessions you're waiting on a place for will show up here.</p>
+    }
+  </div>
+</div>
