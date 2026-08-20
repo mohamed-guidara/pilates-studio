@@ -27,7 +27,7 @@ interface DayLayoutItem {
 @Component({
   selector: 'app-session-calendar',
   standalone: true,
-  imports: [CommonModule, RouterLink, SessionDetailModal, SessionBookingModal, SessionLevelPipe, SessionCategoryPipe],
+  imports: [CommonModule, RouterLink, SessionDetailModal, SessionBookingModal, SessionCategoryPipe],
   templateUrl: './session-calendar.html',
   styleUrl: './session-calendar.css',
 })

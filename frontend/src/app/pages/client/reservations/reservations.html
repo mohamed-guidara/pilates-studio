@@ -1,3 +1,17 @@
+@if (pageErrorMessage()) {
+<div class="mb-4">
+  <feedback-message [message]="pageErrorMessage()" type="error"></feedback-message>
+</div>
+} @else if (actionErrorMessage()) {
+<div class="mb-4">
+  <feedback-message [message]="actionErrorMessage()" type="error"></feedback-message>
+</div>
+} @else if (successMessage()) {
+<div class="mb-4">
+  <feedback-message [message]="successMessage()" type="success"></feedback-message>
+</div>
+}
+
 <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
   <div class="flex items-center gap-2 p-5 pb-0">
     <button
@@ -22,12 +36,120 @@
     </button>
   </div>
 
-  <div class="p-5">
-    <!-- Placeholder — replace with the real reservations/waitings list once that data flow is scoped. -->
-    @if (activeTab() === 'reservations') {
-    <p class="text-sm text-gray-500">Your booked sessions will show up here.</p>
-    } @else {
-    <p class="text-sm text-gray-500">Sessions you're waiting on a place for will show up here.</p>
+  @if (isLoading()) {
+  <div class="flex justify-center items-center py-16">
+    <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+  } @else {
+
+  <!-- Reservations tab -->
+  @if (activeTab() === 'reservations') {
+  <div class="divide-y divide-gray-200">
+    @for (reservation of reservations(); track reservation.reservationId) {
+    <div class="flex items-center justify-between gap-4 px-5 py-4">
+      <div class="flex items-start gap-3 min-w-0">
+        <span
+          class="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0"
+          [style.background-color]="reservation.session ? categoryColor(reservation.session.category).border : '#D1D5DB'"
+        ></span>
+        <div class="min-w-0">
+          <div class="font-semibold text-gray-800 truncate">
+            {{ reservation.session ? (reservation.session.category | sessionCategory) : 'Session #' + reservation.sessionId }}
+          </div>
+          @if (reservation.session) {
+          <div class="text-sm text-gray-500">
+            {{ reservation.session.date }} · {{ reservation.session.startTime | slice:0:5 }} – {{ reservation.session.endTime | slice:0:5 }}
+          </div>
+          <div class="text-sm text-gray-500 mt-1">{{ reservation.session.coachName ?? '—' }} · {{ reservation.session.price }}</div>
+          }
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <span
+          class="px-2.5 py-1 rounded-full text-xs font-medium"
+          [class.bg-green-100]="reservation.status === 2"
+          [class.text-green-700]="reservation.status === 2"
+          [class.bg-yellow-100]="reservation.status === 1"
+          [class.text-yellow-700]="reservation.status === 1"
+          [class.bg-red-100]="reservation.status === 3"
+          [class.text-red-700]="reservation.status === 3"
+        >
+          {{ reservationStatusLabel(reservation.status) }}
+        </span>
+
+        @if (reservation.status === 1 || reservation.status === 2) {
+        <button
+          (click)="cancelReservation(reservation)"
+          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+        >
+          Cancel
+        </button>
+        }
+      </div>
+    </div>
+    } @empty {
+    <div class="px-5 py-10 text-center text-sm text-gray-500">No reservations yet.</div>
     }
   </div>
+  }
+
+  <!-- Waiting list tab -->
+  @if (activeTab() === 'waitings') {
+  <div class="divide-y divide-gray-200">
+    @for (waiting of waitings(); track waiting.waitingId) {
+    <div class="flex items-center justify-between gap-4 px-5 py-4">
+      <div class="flex items-start gap-3 min-w-0">
+        <span
+          class="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0"
+          [style.background-color]="waiting.session ? categoryColor(waiting.session.category).border : '#D1D5DB'"
+        ></span>
+        <div class="min-w-0">
+          <div class="font-semibold text-gray-800 truncate">
+            {{ waiting.session ? (waiting.session.category | sessionCategory) : 'Session #' + waiting.sessionId }}
+          </div>
+          @if (waiting.session) {
+          <div class="text-sm text-gray-500">
+            {{ waiting.session.date }} · {{ waiting.session.startTime | slice:0:5 }} – {{ waiting.session.endTime | slice:0:5 }}
+          </div>
+          <div class="text-sm text-gray-500 mt-1">{{ waiting.session.coachName ?? '—' }}</div>
+          }
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        @if (waiting.status === 2 && waiting.linkedReservation && waiting.linkedReservation.status === 1) {
+        <span class="text-xs text-blue-700 text-right">
+          A place opened up — complete payment from the Reservations tab.
+        </span>
+        }
+
+        <span
+          class="px-2.5 py-1 rounded-full text-xs font-medium"
+          [class.bg-blue-100]="waiting.status === 2"
+          [class.text-blue-700]="waiting.status === 2"
+          [class.bg-yellow-100]="waiting.status === 1"
+          [class.text-yellow-700]="waiting.status === 1"
+          [class.bg-red-100]="waiting.status === 3"
+          [class.text-red-700]="waiting.status === 3"
+        >
+          {{ waitingStatusLabel(waiting.status) }}
+        </span>
+
+        @if (waiting.status === 1) {
+        <button
+          (click)="cancelWaiting(waiting)"
+          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+        >
+          Leave list
+        </button>
+        }
+      </div>
+    </div>
+    } @empty {
+    <div class="px-5 py-10 text-center text-sm text-gray-500">You're not on any waiting lists.</div>
+    }
+  </div>
+  }
+  }
 </div>

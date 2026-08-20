@@ -23,6 +23,7 @@ import { Waitings } from './pages/admin/waitings/waitings';
 import { CoachSessions } from './pages/coach/sessions/sessions';
 import { ClientSessions } from './pages/client/sessions/sessions';
 import { ClientReservations } from './pages/client/reservations/reservations';
+import { PaymentPage } from './pages/client/payment/payment';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -65,4 +66,5 @@ export const routes: Routes = [
       { path: 'reservations', component: ClientReservations },
     ],
   },
-];  
+  { path: 'payment/:reservationId', component: PaymentPage },
+];

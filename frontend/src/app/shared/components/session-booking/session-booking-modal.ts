@@ -17,7 +17,7 @@ type SessionWithExtras = Session & { coachName?: string; roomNumber?: string; re
   selector: 'session-booking-modal',
   standalone: true,
   imports: [CommonModule, SessionLevelPipe, SessionCategoryPipe],
-  templateUrl: './session-booking.html',
+  templateUrl: './sessionBooking.html',
 })
 export class SessionBookingModal implements OnChanges {
   @Input() show = signal(false);
@@ -74,17 +74,12 @@ export class SessionBookingModal implements OnChanges {
         );
         this.myReservation.set(activeReservation ?? null);
 
-        // Waiting has no sessionId, so a waiting-list entry can only be tied back to a
-        // session via reservationId. That works once a reservation exists (the
-        // waiting-promotion flow you described), but a waiting-list entry created with
-        // reservationId = null (join-waiting-list-without-booking) can't be matched to a
-        // session at all with the current model — see the note on joinWaitingList() below.
-        if (activeReservation) {
-          const relatedWaiting = waitings.find(
-            (w) => w.reservationId === activeReservation.reservationId && w.status === 1,
-          );
-          this.myWaiting.set(relatedWaiting ?? null);
-        }
+        // Waiting now carries its own sessionId, so this works whether or not a
+        // reservation has been created yet (i.e. before and after promotion).
+        const activeWaiting = waitings.find(
+          (w) => w.sessionId === sessionId && w.clientId === clientId && w.status === 1,
+        );
+        this.myWaiting.set(activeWaiting ?? null);
 
         this.isLoading.set(false);
       },
@@ -129,17 +124,20 @@ export class SessionBookingModal implements OnChanges {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
-    // Two known gaps here, both need a decision before this ships:
-    // 1) WaitingService.createWaiting() types reservationId as a required number, but
-    //    joining the waiting list happens *before* any reservation exists. Passing null
-    //    until the service signature allows (reservationId: number | null).
-    // 2) Waiting has no sessionId. Once created, there is no reliable way for this modal
-    //    (or any other screen) to determine which session this entry is for, so the
-    //    duplicate-waiting-list guard above only works after promotion (once a
-    //    reservation + reservationId exist). Recommend adding a sessionId column to
-    //    Waiting so a client's waiting-list entries can be matched back to sessions.
+    // Two gaps in WaitingService.createWaiting()'s current type signature:
+    // 1) reservationId is typed as a required number, but joining the waiting list
+    //    happens before any reservation exists — passing null until it's widened to
+    //    (reservationId: number | null).
+    // 2) Its data type doesn't include sessionId at all, even though Waiting now has
+    //    that column — passing it via an `as any` cast until the signature is updated
+    //    to accept { sessionId: number; reservationId: number | null; clientId: number; status: string }.
     this.waitingService
-      .createWaiting({ sessionId: this.session.sessionId , reservationId: null as unknown as number, clientId: this.clientId, status: '1' })
+      .createWaiting({
+        reservationId: null as unknown as number,
+        clientId: this.clientId,
+        status: '1',
+        sessionId: this.session.sessionId,
+      } as any)
       .subscribe({
         next: (waiting) => {
           this.isSubmitting.set(false);

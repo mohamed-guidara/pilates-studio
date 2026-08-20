@@ -1,0 +1,90 @@
+<div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    @if (pageErrorMessage()) {
+    <feedback-message [message]="pageErrorMessage()" type="error"></feedback-message>
+    } @else if (isLoading()) {
+    <div class="flex justify-center py-16">
+      <div class="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    } @else if (reservation()) {
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <h1 class="text-lg font-bold text-gray-800 mb-1">Complete Payment</h1>
+      <p class="text-sm text-gray-500 mb-5">This is a simulated payment — no card details are stored.</p>
+
+      @if (session()) {
+      <div class="mb-6 rounded-lg bg-gray-50 border border-gray-200 p-4 text-sm">
+        <div class="font-semibold text-gray-800">{{ session()!.category | sessionCategory }}</div>
+        <div class="text-gray-500 mt-1">{{ session()!.date }} · {{ session()!.startTime | slice:0:5 }} – {{ session()!.endTime | slice:0:5 }}</div>
+        <div class="text-gray-500">Coach: {{ session()!.coachName ?? '—' }}</div>
+        <div class="text-gray-500">Room: {{ session()!.roomNumber ?? '—' }}</div>
+        <div class="mt-2 flex items-center justify-between">
+          <span class="text-gray-600">Amount due</span>
+          <span class="font-semibold text-gray-800">{{ session()!.price }}</span>
+        </div>
+      </div>
+      }
+
+      @if (reservation()!.status !== 1) {
+      <div class="px-4 py-3 rounded-lg text-sm"
+           [class.bg-green-50]="reservation()!.status === 2"
+           [class.text-green-700]="reservation()!.status === 2"
+           [class.bg-red-50]="reservation()!.status === 3"
+           [class.text-red-700]="reservation()!.status === 3">
+        @if (reservation()!.status === 2) {
+        This reservation is already paid and confirmed.
+        } @else {
+        This reservation was cancelled and can no longer be paid.
+        }
+      </div>
+      <button (click)="cancel()" class="cursor-pointer mt-4 w-full px-4 py-2 rounded-md bg-gray-200 font-medium text-gray-700 hover:bg-gray-300">
+        Back to My Bookings
+      </button>
+      } @else {
+
+      @if (submitError()) {
+      <p class="text-sm text-red-600 mb-4">{{ submitError() }}</p>
+      }
+
+      <form (ngSubmit)="submitPayment()" class="space-y-4">
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Cardholder name</label>
+          <input type="text" [(ngModel)]="cardholderName" name="cardholderName" required placeholder="Jane Doe"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium text-gray-700">Card number</label>
+          <input type="text" [(ngModel)]="cardNumber" name="cardNumber" required placeholder="4242 4242 4242 4242" maxlength="19"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium text-gray-700">Expiration</label>
+            <input type="text" [(ngModel)]="expiration" name="expiration" required placeholder="MM/YY" maxlength="5"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block mb-1 text-sm font-medium text-gray-700">Security code</label>
+            <input type="text" [(ngModel)]="securityCode" name="securityCode" required placeholder="CVC" maxlength="4"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" (click)="cancel()"
+            class="cursor-pointer flex-1 px-4 py-2 rounded-md bg-gray-200 font-medium text-gray-700 hover:bg-gray-300">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="isSubmitting()"
+            class="cursor-pointer flex-1 px-4 py-2 rounded-md bg-blue-600 font-medium text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+            {{ isSubmitting() ? 'Processing…' : 'Pay now' }}
+          </button>
+        </div>
+      </form>
+      }
+    </div>
+    }
+  </div>
+</div>
