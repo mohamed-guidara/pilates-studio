@@ -1,8 +1,57 @@
-    <div class="p-6">
-      <h1 class="text-3xl font-bold mb-4">
-        Welcome, {{ firstName }}!
-      </h1>
-      <p class="text-gray-700">
-        Use the sidebar to manage coaches, rooms, equipments, and more.
-      </p>
+    <div class="welcome-shell">
+      <header class="welcome-header">
+        <div>
+          <h1>Good morning, {{ firstName }}.</h1>
+          <p class="welcome-copy">A clear view of your studio rhythm, from today's demand to the week ahead.</p>
+        </div>
+        <div class="date-stamp">{{ today | date:'EEEE, MMMM d' }}<span>{{ today | date:'yyyy' }}</span></div>
+      </header>
+
+      @if (pageError()) {
+        <div class="notice">Live data could not be loaded. The dashboard will refresh when the connection returns.</div>
+      }
+
+      <section class="stat-grid" aria-label="Studio summary">
+        <article class="stat-card accent-coral"><span class="stat-icon">↗</span><p>Total reservations</p><strong>{{ totalReservations() }}</strong><small>All recorded bookings</small></article>
+        <article class="stat-card accent-teal"><span class="stat-icon">◌</span><p>Occupation rate</p><strong>{{ occupationRate() }}<i>%</i></strong><small>{{ confirmedReservations() }} confirmed places</small></article>
+        <article class="stat-card accent-gold"><span class="stat-icon">◷</span><p>Upcoming sessions</p><strong>{{ upcomingSessions() }}</strong><small>Scheduled in your calendar</small></article>
+      </section>
+
+      @if (isLoading()) {
+        <div class="loading-bar" aria-label="Loading dashboard"></div>
+      } @else {
+        <section class="chart-grid">
+          <article class="panel trend-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Last 7 days</p><h2>Reservation momentum</h2></div><span class="trend-badge">Confirmed flow</span></div>
+            <div class="trend-chart">
+              <svg viewBox="0 0 336 170" role="img" aria-label="Reservation trend over the last seven days" preserveAspectRatio="none">
+                <defs><linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e9836b" stop-opacity=".32"/><stop offset="1" stop-color="#e9836b" stop-opacity="0"/></linearGradient></defs>
+                <line x1="12" y1="30" x2="324" y2="30"/><line x1="12" y1="86" x2="324" y2="86"/><line x1="12" y1="142" x2="324" y2="142"/>
+                <polygon class="trend-area" [attr.points]="getTrendArea()"/><polyline class="trend-line" [attr.points]="trend().map((value, index) => getTrendPoint(value, index)).join(' ')"/>
+                @for (value of trend(); track $index) { <circle class="trend-point" [attr.cx]="12 + $index * 52" [attr.cy]="142 - (value / getTrendMax()) * 112" r="4"/> }
+              </svg>
+              <div class="chart-labels">@for (label of trendLabels; track $index) { <span>{{ label }}</span> }</div>
+            </div>
+          </article>
+
+          <article class="panel occupancy-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Capacity check</p><h2>Studio occupation</h2></div></div>
+            <div class="ring-wrap">
+              <svg viewBox="0 0 120 120" role="img" aria-label="Studio occupation rate">
+                <circle class="ring-track" cx="60" cy="60" r="48"/><circle class="ring-value" cx="60" cy="60" r="48" [style.stroke-dasharray]="occupationRate() * 3.02 + ' 302'"/>
+              </svg><div class="ring-label"><strong>{{ occupationRate() }}<i>%</i></strong><span>occupied</span></div>
+            </div>
+            <div class="occupancy-note"><span></span><p>Confirmed reservations are filling <b>{{ occupationRate() }}%</b> of available places.</p></div>
+          </article>
+        </section>
+
+        <section class="panel schedule-panel">
+          <div class="panel-heading"><div><p class="eyebrow">Coming up</p><h2>Next sessions</h2></div></div>
+          @if (nextSessions().length) {
+            <div class="session-list">@for (session of nextSessions(); track session.sessionId) {
+              <div class="session-row"><div class="session-date"><b>{{ formatSessionDate(session) }}</b><span>{{ session.startTime.slice(0, 5) }} - {{ session.endTime.slice(0, 5) }}</span></div><div class="session-type"><b>Category: {{ session.category | sessionCategory}}</b><span>Level: {{ session.level | sessionLevel}} · {{ session.places }} places</span></div><div class="session-capacity"><div><span>{{ session.booked }} booked</span><b>{{ session.rate }}%</b></div><div class="capacity-track"><span [style.width.%]="session.rate"></span></div></div></div>
+            }</div>
+          } @else { <p class="empty-state">No upcoming sessions are scheduled yet.</p> }
+        </section>
+      }
     </div>
