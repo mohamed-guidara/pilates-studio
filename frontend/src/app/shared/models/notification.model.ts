@@ -1,7 +1,8 @@
 export interface Notification {
   notificationId: number;
-  clientId: string;
-  subject: number;
-  content: number;
+  clientId: number;
+  subject: string;
+  content: string;
   createdAt: string;
+  isSeen: number
 }

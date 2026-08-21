@@ -26,4 +26,14 @@ export class NotificationService {
   }): Observable<Notification> {
     return this.http.post<Notification>(this.apiUrl, data);
   }
+
+  updateNotification(id: number, data: {
+    clientId: number;
+    subject: string;
+    content: string;
+    isSeen: number;
+  }): Observable<Notification> {
+    return this.http.put<Notification>(`${this.apiUrl}/${id}`, data);
+  }
+
 }

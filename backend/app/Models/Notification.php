@@ -18,6 +18,7 @@ class Notification extends Model
         'subject',
         'content',
         'createdAt',
+        'isSeen'
     ];
 
     // Relationship: each notification belongs to a person (client)

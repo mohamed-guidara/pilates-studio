@@ -27,4 +27,20 @@ class NotificationController extends Controller
             ], 404);
         }
     }
+        public function update(Request $request, string $id)
+    {
+        if (Notification::where('notificationId', $id)->exists()) {
+            $Notification = Notification::find($id);
+            $Notification->isSeen      = $request->isSeen;
+            $Notification->save();
+
+            return response()->json([
+                "message" => "record updated successfully"
+            ], 200);
+        } else {
+            return response()->json([
+                "message" => "Notification not found"
+            ], 404);
+        }
+    }
 }

@@ -66,6 +66,16 @@
       </div>
 
       <div class="flex items-center gap-3 shrink-0">
+        @if (reservation.status === 1) {
+        <span
+          class="text-xs font-medium tabular-nums"
+          [class.text-red-600]="remainingMs(reservation) < 120000"
+          [class.text-gray-500]="remainingMs(reservation) >= 120000"
+        >
+          {{ remainingMs(reservation) > 0 ? 'Expires in ' + remainingLabel(reservation) : 'Expired' }}
+        </span>
+        }
+
         <span
           class="px-2.5 py-1 rounded-full text-xs font-medium"
           [class.bg-green-100]="reservation.status === 2"
@@ -78,7 +88,16 @@
           {{ reservationStatusLabel(reservation.status) }}
         </span>
 
-        @if (reservation.status === 1 || reservation.status === 2) {
+        @if (reservation.status === 1) {
+        <button
+          (click)="payNow(reservation)"
+          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Pay now
+        </button>
+        }
+
+        @if (reservation.status === 1) {
         <button
           (click)="cancelReservation(reservation)"
           class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"

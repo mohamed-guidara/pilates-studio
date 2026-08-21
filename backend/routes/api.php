@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         //I have to search how notifications are created adutomatically
         Route::apiResource('notifications', NotificationController::class)->only([
-            'index', 'show'
+            'index', 'store', 'show', 'update'
             ]);
 
     });

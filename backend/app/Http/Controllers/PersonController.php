@@ -17,10 +17,6 @@ class PersonController extends Controller
         return Person::all();
     }
 
-    protected function rules($personId = null)
-    {
-
-    }
 
     /**
      * Store a newly created resource in storage.

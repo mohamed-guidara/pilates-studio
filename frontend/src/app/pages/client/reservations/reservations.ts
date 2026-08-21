@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
@@ -10,6 +10,7 @@ import { RoomService } from '../../../services/roomService.service';
 import { ReservationService } from '../../../services/reservationService.service';
 import { WaitingService } from '../../../services/waitingService.service';
 import { ClientService } from '../../../services/clientService.service';
+import { ReservationLifecycleService } from '../../../services/reservationLifecycleService.service';
 
 import { Reservation } from '../../../shared/models/reservation.model';
 import { Waiting } from '../../../shared/models/waiting.model';
@@ -17,6 +18,7 @@ import { Waiting } from '../../../shared/models/waiting.model';
 import { FeedbackMessage } from '../../../shared/components/feedback-message/feedback-message';
 import { SessionVM, enrichSessions, resolveCurrentClient } from '../../../shared/utils/session-enrichment.util';
 import { categoryColor } from '../../../shared/utils/category-color.util';
+import { getRemainingMs, formatRemainingTime } from '../../../shared/utils/reservation-expiry.util';
 import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
 
 type BookingsTab = 'reservations' | 'waitings';
@@ -31,7 +33,7 @@ export type WaitingVM = Waiting & { session?: SessionVM; linkedReservation?: Res
   templateUrl: './reservations.html',
   styleUrl: './reservations.css',
 })
-export class ClientReservations implements OnInit {
+export class ClientReservations implements OnInit, OnDestroy {
   activeTab = signal<BookingsTab>('reservations');
 
   isLoading = signal(true);
@@ -41,6 +43,11 @@ export class ClientReservations implements OnInit {
   reservations = signal<ReservationVM[]>([]);
   waitings = signal<WaitingVM[]>([]);
   successMessage = signal<string | null>(null);
+
+  /** Ticks every second so the expiry countdown on pending reservations stays live. */
+  nowMs = signal(Date.now());
+  private tickHandle?: ReturnType<typeof setInterval>;
+  private isCheckingExpiry = false;
 
   categoryColor = categoryColor;
 
@@ -54,6 +61,7 @@ export class ClientReservations implements OnInit {
     private clientService: ClientService,
     private router: Router,
     private route: ActivatedRoute,
+    private lifecycle: ReservationLifecycleService,
   ) {}
 
   ngOnInit(): void {
@@ -63,7 +71,39 @@ export class ClientReservations implements OnInit {
       this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
     }
 
-    this.loadAll();
+    this.lifecycle.runCheck().finally(() => this.loadAll());
+
+    this.tickHandle = setInterval(() => this.tick(), 1000);
+  }
+
+  private tick(): void {
+    this.nowMs.set(Date.now());
+    this.maybeTriggerExpiry();
+  }
+
+  /**
+   * The countdown itself is purely visual — it doesn't expire anything on its own.
+   * This is what actually calls the lifecycle service the moment a pending
+   * reservation's timer hits zero, so expiry + waiting-list promotion happen right
+   * away instead of waiting for the next page load.
+   */
+  private maybeTriggerExpiry(): void {
+    if (this.isCheckingExpiry) return;
+
+    const hasJustExpired = this.reservations().some((r) => r.status === 1 && this.remainingMs(r) === 0);
+    if (!hasJustExpired) return;
+
+    this.isCheckingExpiry = true;
+    this.lifecycle.runCheck().finally(() => {
+      this.isCheckingExpiry = false;
+      this.loadAll();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.tickHandle) {
+      clearInterval(this.tickHandle);
+    }
   }
 
   loadAll(): void {
@@ -154,6 +194,20 @@ export class ClientReservations implements OnInit {
       default:
         return 'Unknown';
     }
+  }
+
+  // ---------- Expiry countdown (pending reservations only) ----------
+
+  remainingMs(reservation: ReservationVM): number {
+    return getRemainingMs(reservation.createdAt, this.nowMs());
+  }
+
+  remainingLabel(reservation: ReservationVM): string {
+    return formatRemainingTime(this.remainingMs(reservation));
+  }
+
+  payNow(reservation: ReservationVM): void {
+    this.router.navigate(['/payment', reservation.reservationId]);
   }
 
   // ---------- Cancel actions ----------
