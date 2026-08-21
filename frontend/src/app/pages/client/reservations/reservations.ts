@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, forkJoin } from 'rxjs';
 
@@ -43,6 +43,18 @@ export class ClientReservations implements OnInit, OnDestroy {
   reservations = signal<ReservationVM[]>([]);
   waitings = signal<WaitingVM[]>([]);
   successMessage = signal<string | null>(null);
+
+  sortedReservations = computed(() =>
+  [...this.reservations()].sort((a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+);
+
+sortedWaitings = computed(() =>
+  [...this.waitings()].sort((a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+);
 
   /** Ticks every second so the expiry countdown on pending reservations stays live. */
   nowMs = signal(Date.now());

@@ -45,7 +45,7 @@
   <!-- Reservations tab -->
   @if (activeTab() === 'reservations') {
   <div class="divide-y divide-gray-200">
-    @for (reservation of reservations(); track reservation.reservationId) {
+    @for (reservation of sortedReservations(); track reservation.reservationId) {
     <div class="flex items-center justify-between gap-4 px-5 py-4">
       <div class="flex items-start gap-3 min-w-0">
         <span
@@ -116,7 +116,7 @@
   <!-- Waiting list tab -->
   @if (activeTab() === 'waitings') {
   <div class="divide-y divide-gray-200">
-    @for (waiting of waitings(); track waiting.waitingId) {
+    @for (waiting of sortedWaitings(); track waiting.waitingId) {
     <div class="flex items-center justify-between gap-4 px-5 py-4">
       <div class="flex items-start gap-3 min-w-0">
         <span
