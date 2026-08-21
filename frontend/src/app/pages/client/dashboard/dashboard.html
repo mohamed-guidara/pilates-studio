@@ -1,14 +1,21 @@
-<div class="flex min-h-screen">
-  <app-sidebar [navItems]="navItems" homeLink="/client" title="Client Panel"></app-sidebar>
+<div class="flex min-h-screen bg-gray-50">
+  <app-sidebar
+    [navItems]="navItems"
+    homeLink="/client"
+    title="Client Panel"
+    class="w-64 shrink-0 sticky top-0 h-screen"
+  ></app-sidebar>
 
-  <main class="flex-1 ml-64 min-h-screen">
-    <div class="flex justify-end items-center gap-3 px-6 py-4 border-b border-gray-200 bg-white">
+  <main class="flex-1 min-h-screen">
+    <div class="sticky top-0 z-30 flex justify-end items-center px-6 py-3 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
       <button
         (click)="toggleNotifications()"
-        class="cursor-pointer relative p-2 rounded-full hover:bg-gray-100 text-gray-600"
+        class="cursor-pointer relative p-2 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
         title="Notifications"
       >
-        🔔
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+        </svg>
         @if (unreadCount() > 0) {
         <span
           class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-[10px] font-medium"
@@ -33,7 +40,11 @@
   >
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-medium text-gray-800">Notifications</h2>
-      <button (click)="toggleNotifications()" class="cursor-pointer text-gray-400 hover:text-gray-600">✕</button>
+      <button (click)="toggleNotifications()" class="cursor-pointer text-gray-400 hover:text-gray-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     @if (isLoadingNotifications()) {
