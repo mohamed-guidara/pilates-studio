@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Notification;
+use App\Mail\NotificationMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -14,7 +17,11 @@ class NotificationController extends Controller
 
     public function store(Request $request)
     {
-        return Notification::create($request->all());
+        $notification = Notification::create($request->all());
+
+        $this->sendNotificationEmail($notification);
+
+        return $notification;
     }
 
     public function show(string $id)
@@ -27,7 +34,8 @@ class NotificationController extends Controller
             ], 404);
         }
     }
-        public function update(Request $request, string $id)
+
+    public function update(Request $request, string $id)
     {
         if (Notification::where('notificationId', $id)->exists()) {
             $Notification = Notification::find($id);
@@ -41,6 +49,28 @@ class NotificationController extends Controller
             return response()->json([
                 "message" => "Notification not found"
             ], 404);
+        }
+    }
+
+    /**
+     * Sends the notification's subject/content as an email to the client behind it.
+     * Deliberately never throws back to the caller — a client not having a resolvable
+     * email address, or the mail server being unreachable, should not block the
+     * notification itself from being created and returned to the frontend.
+     */
+    private function sendNotificationEmail(Notification $notification): void
+    {
+        try {
+            $email = $notification->client?->person?->email;
+
+            if (!$email) {
+                Log::warning("Notification {$notification->notificationId}: no email found for clientId {$notification->clientId}");
+                return;
+            }
+
+            Mail::to($email)->send(new NotificationMail($notification));
+        } catch (\Throwable $e) {
+            Log::error("Failed to send email for notification {$notification->notificationId}: " . $e->getMessage());
         }
     }
 }

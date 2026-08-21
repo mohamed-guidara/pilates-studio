@@ -24,6 +24,6 @@ class Notification extends Model
     // Relationship: each notification belongs to a person (client)
     public function client()
     {
-        return $this->belongsTo(Person::class, 'clientId', 'personId');
+        return $this->belongsTo(Client::class, 'clientId', 'clientId');
     }
 }
