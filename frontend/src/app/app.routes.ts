@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { Login } from './pages/auth/login/login';
 import { Register } from './pages/auth/register/register';
-import { Home } from './pages/home-page/home-page';
+import { HomePage } from './pages/home-page/home-page';
 import { AdminDashboard } from './pages/admin/dashboard/dashboard';
 import { ClientDashboard } from './pages/client/dashboard/dashboard';
 import { CoachDashboard } from './pages/coach/dashboard/dashboard';
@@ -11,7 +11,6 @@ import { Equipments } from './pages/admin/equipments/equipments';
 import { Sessions } from './pages/admin/sessions/sessions';
 import { WelcomePage } from './pages/admin/welcome-page/welcome-page';
 import { Clients } from './pages/admin/clients/clients';
-import { CreateCoach } from './shared/components/create-coach/create-coach';
 import { UpdateCoach } from './shared/components/update-coach/update-coach';
 import { UpdateRoom } from './shared/components/update-room/update-room';
 import { UpdateEquipment } from './shared/components/update-equipment/update-equipment';
@@ -26,7 +25,7 @@ import { ClientReservations } from './pages/client/reservations/reservations';
 import { PaymentPage } from './pages/client/payment/payment';
 
 export const routes: Routes = [
-  { path: '', component: Home },
+  { path: '', component: HomePage },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   {
