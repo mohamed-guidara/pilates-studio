@@ -96,7 +96,12 @@ export class Sessions implements OnInit {
       next: ({ sessions, coaches, persons, rooms, reservations }) => {
         this.rooms.set(rooms);
         this.coachOptions.set(buildCoachOptions(coaches, persons));
-        this.sessions.set(enrichSessions(sessions, coaches, persons, rooms, reservations));
+        const sortedSessions = enrichSessions(sessions, coaches, persons, rooms, reservations)
+          .sort((first, second) => {
+            const dateDifference = this.sessionTimestamp(second) - this.sessionTimestamp(first);
+            return dateDifference || second.sessionId - first.sessionId;
+          });
+        this.sessions.set(sortedSessions);
         this.myCoachId.set(resolveCurrentCoach(coaches).coachId);
       },
       error: (err) => {
@@ -104,6 +109,10 @@ export class Sessions implements OnInit {
         console.error('Error loading sessions:', err);
       }
     });
+  }
+
+  private sessionTimestamp(session: SessionVM): number {
+    return new Date(`${session.date}T${session.startTime}`).getTime();
   }
 
   createSession() {
