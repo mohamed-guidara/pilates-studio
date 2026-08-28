@@ -27,7 +27,6 @@ type ClientViewMode = 'list' | 'calendar';
     FeedbackMessage,
     SessionCalendar,
     SessionBookingModal,
-
     SessionCategoryPipe,
   ],
   templateUrl: './sessions.html',

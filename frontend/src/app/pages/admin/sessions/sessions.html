@@ -109,7 +109,7 @@
 
 @if (showCreateModal()) {
 <create-session-modal [show]="showCreateModal" [apiError]="createErrorMessage" [coachOptions]="coachOptions()"
-  [rooms]="rooms()" (close)="closeCreateModal()" (save)="handleCreate($event)">
+  [rooms]="rooms()" [isLoading]="isCreating" (close)="closeCreateModal()" (save)="handleCreate($event)">
 </create-session-modal>
 }
 @if (showDetailModal()) {

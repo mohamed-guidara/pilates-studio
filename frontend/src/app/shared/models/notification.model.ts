@@ -4,5 +4,5 @@ export interface Notification {
   subject: string;
   content: string;
   createdAt: string;
-  isSeen: number
+  isSeen: number; // 0 = unseen, 1 = seen
 }

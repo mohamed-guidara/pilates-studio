@@ -35,5 +35,4 @@ export class NotificationService {
   }): Observable<Notification> {
     return this.http.put<Notification>(`${this.apiUrl}/${id}`, data);
   }
-
 }

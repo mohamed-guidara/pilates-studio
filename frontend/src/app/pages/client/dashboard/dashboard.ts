@@ -6,15 +6,15 @@ import { forkJoin } from 'rxjs';
 import { Sidebar, SidebarNavItem } from '../../../shared/components/sidebar/sidebar';
 import { ClientService } from '../../../services/clientService.service';
 import { NotificationService } from '../../../services/notificationService.service';
-import { ReservationLifecycleService } from '../../../services/reservationLifecycleService.service';
 import { Notification } from '../../../shared/models/notification.model';
 import { resolveCurrentClient } from '../../../shared/utils/session-enrichment.util';
 
-/** How often ClientDashboard re-runs the lifecycle check + refreshes notifications
- *  while the client has any /client/* page open. This is what makes promotion and
- *  its notification show up without the client needing to open a specific tab —
- *  see ReservationLifecycleService for why this polling exists instead of a real
- *  backend-pushed/scheduled mechanism. */
+/** Reservation expiry, waiting-list promotion, and reminders are now handled by the
+ *  Laravel `sessions:process-lifecycle` scheduled command — this component no longer
+ *  triggers any of that. It still polls periodically because there's no push
+ *  mechanism (websockets, SSE, etc.) to tell the client "a notification just
+ *  arrived" — this just refreshes the list/badge so new ones show up without a
+ *  full page reload. */
 const POLL_INTERVAL_MS = 30 * 1000;
 
 @Component({
@@ -40,22 +40,17 @@ export class ClientDashboard implements OnInit, OnDestroy {
   constructor(
     private clientService: ClientService,
     private notificationService: NotificationService,
-    private lifecycle: ReservationLifecycleService,
   ) {}
 
   ngOnInit(): void {
-    this.runLifecycleAndRefresh();
-    this.pollHandle = setInterval(() => this.runLifecycleAndRefresh(), POLL_INTERVAL_MS);
+    this.loadNotifications(false);
+    this.pollHandle = setInterval(() => this.loadNotifications(false), POLL_INTERVAL_MS);
   }
 
   ngOnDestroy(): void {
     if (this.pollHandle) {
       clearInterval(this.pollHandle);
     }
-  }
-
-  private runLifecycleAndRefresh(): void {
-    this.lifecycle.runCheck().finally(() => this.loadNotifications(false));
   }
 
   toggleNotifications(): void {

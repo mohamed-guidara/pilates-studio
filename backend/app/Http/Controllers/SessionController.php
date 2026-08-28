@@ -39,6 +39,7 @@ class SessionController extends Controller
             $session->startTime = $request->startTime;
             $session->endTime   = $request->endTime;
             $session->places    = $request->places;
+            $session->category  = $request->category;
             $session->save();
 
             return response()->json([

@@ -14,24 +14,16 @@
 
 <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
   <div class="flex items-center gap-2 p-5 pb-0">
-    <button
-      (click)="setTab('reservations')"
+    <button (click)="setTab('reservations')"
       class="cursor-pointer px-4 py-2 text-sm font-medium rounded-t-lg border-b-2"
-      [class.border-blue-600]="activeTab() === 'reservations'"
-      [class.text-blue-700]="activeTab() === 'reservations'"
+      [class.border-blue-600]="activeTab() === 'reservations'" [class.text-blue-700]="activeTab() === 'reservations'"
       [class.border-transparent]="activeTab() !== 'reservations'"
-      [class.text-gray-500]="activeTab() !== 'reservations'"
-    >
+      [class.text-gray-500]="activeTab() !== 'reservations'">
       Reservations
     </button>
-    <button
-      (click)="setTab('waitings')"
-      class="cursor-pointer px-4 py-2 text-sm font-medium rounded-t-lg border-b-2"
-      [class.border-blue-600]="activeTab() === 'waitings'"
-      [class.text-blue-700]="activeTab() === 'waitings'"
-      [class.border-transparent]="activeTab() !== 'waitings'"
-      [class.text-gray-500]="activeTab() !== 'waitings'"
-    >
+    <button (click)="setTab('waitings')" class="cursor-pointer px-4 py-2 text-sm font-medium rounded-t-lg border-b-2"
+      [class.border-blue-600]="activeTab() === 'waitings'" [class.text-blue-700]="activeTab() === 'waitings'"
+      [class.border-transparent]="activeTab() !== 'waitings'" [class.text-gray-500]="activeTab() !== 'waitings'">
       Waiting List
     </button>
   </div>
@@ -48,60 +40,52 @@
     @for (reservation of sortedReservations(); track reservation.reservationId) {
     <div class="flex items-center justify-between gap-4 px-5 py-4">
       <div class="flex items-start gap-3 min-w-0">
-        <span
-          class="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0"
-          [style.background-color]="reservation.session ? categoryColor(reservation.session.category).border : '#D1D5DB'"
-        ></span>
+        <span class="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0"
+          [style.background-color]="reservation.session ? categoryColor(reservation.session.category).border : '#D1D5DB'"></span>
         <div class="min-w-0">
           <div class="font-semibold text-gray-800 truncate">
-            {{ reservation.session ? (reservation.session.category | sessionCategory) : 'Session #' + reservation.sessionId }}
+            {{ reservation.session ? (reservation.session.category | sessionCategory) : 'Session #' +
+            reservation.sessionId }}
           </div>
           @if (reservation.session) {
           <div class="text-sm text-gray-500">
-            {{ reservation.session.date }} · {{ reservation.session.startTime | slice:0:5 }} – {{ reservation.session.endTime | slice:0:5 }}
+            {{ reservation.session.date }} · {{ reservation.session.startTime | slice:0:5 }} – {{
+            reservation.session.endTime | slice:0:5 }}
           </div>
-          <div class="text-sm text-gray-500 mt-1">{{ reservation.session.coachName ?? '—' }} · {{ reservation.session.price }}</div>
+          <div class="text-sm text-gray-500 mt-1">{{ reservation.session.coachName ?? '—' }} · {{
+            reservation.session.price }}</div>
           }
         </div>
       </div>
 
       <div class="flex items-center gap-3 shrink-0">
-        @if (reservation.status === 1) {
-        <span
-          class="text-xs font-medium tabular-nums"
-          [class.text-red-600]="remainingMs(reservation) < 120000"
-          [class.text-gray-500]="remainingMs(reservation) >= 120000"
-        >
-          {{ remainingMs(reservation) > 0 ? 'Expires in ' + remainingLabel(reservation) : 'Expired' }}
+        @if (reservation.status === 1 && remainingMs(reservation) > 0) {
+        <span class="text-xs font-medium tabular-nums" [class.text-red-600]="remainingMs(reservation) < 120000"
+          [class.text-gray-500]="remainingMs(reservation) >= 120000">
+          Expires in {{ remainingLabel(reservation) }}
         </span>
         }
 
-        <span
-          class="px-2.5 py-1 rounded-full text-xs font-medium"
-          [class.bg-green-100]="reservation.status === 2"
-          [class.text-green-700]="reservation.status === 2"
-          [class.bg-yellow-100]="reservation.status === 1"
-          [class.text-yellow-700]="reservation.status === 1"
-          [class.bg-red-100]="reservation.status === 3"
-          [class.text-red-700]="reservation.status === 3"
-        >
-          {{ reservationStatusLabel(reservation.status) }}
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium"
+          [class.bg-green-100]="effectiveReservationStatus(reservation) === 2"
+          [class.text-green-700]="effectiveReservationStatus(reservation) === 2"
+          [class.bg-yellow-100]="effectiveReservationStatus(reservation) === 1"
+          [class.text-yellow-700]="effectiveReservationStatus(reservation) === 1"
+          [class.bg-red-100]="effectiveReservationStatus(reservation) === 3"
+          [class.text-red-700]="effectiveReservationStatus(reservation) === 3">
+          {{ reservationStatusLabel(reservation) }}
         </span>
 
-        @if (reservation.status === 1) {
-        <button
-          (click)="payNow(reservation)"
-          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
+        @if (reservation.status === 1 && remainingMs(reservation) > 0) {
+        <button (click)="payNow(reservation)"
+          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700">
           Pay now
         </button>
         }
 
-        @if (reservation.status === 1) {
-        <button
-          (click)="cancelReservation(reservation)"
-          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
-        >
+        @if (effectiveReservationStatus(reservation) === 1) {
+        <button (click)="cancelReservation(reservation)"
+          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200">
           Cancel
         </button>
         }
@@ -119,17 +103,16 @@
     @for (waiting of sortedWaitings(); track waiting.waitingId) {
     <div class="flex items-center justify-between gap-4 px-5 py-4">
       <div class="flex items-start gap-3 min-w-0">
-        <span
-          class="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0"
-          [style.background-color]="waiting.session ? categoryColor(waiting.session.category).border : '#D1D5DB'"
-        ></span>
+        <span class="h-2.5 w-2.5 mt-1.5 rounded-full shrink-0"
+          [style.background-color]="waiting.session ? categoryColor(waiting.session.category).border : '#D1D5DB'"></span>
         <div class="min-w-0">
           <div class="font-semibold text-gray-800 truncate">
             {{ waiting.session ? (waiting.session.category | sessionCategory) : 'Session #' + waiting.sessionId }}
           </div>
           @if (waiting.session) {
           <div class="text-sm text-gray-500">
-            {{ waiting.session.date }} · {{ waiting.session.startTime | slice:0:5 }} – {{ waiting.session.endTime | slice:0:5 }}
+            {{ waiting.session.date }} · {{ waiting.session.startTime | slice:0:5 }} – {{ waiting.session.endTime |
+            slice:0:5 }}
           </div>
           <div class="text-sm text-gray-500 mt-1">{{ waiting.session.coachName ?? '—' }}</div>
           }
@@ -143,23 +126,16 @@
         </span>
         }
 
-        <span
-          class="px-2.5 py-1 rounded-full text-xs font-medium"
-          [class.bg-blue-100]="waiting.status === 2"
-          [class.text-blue-700]="waiting.status === 2"
-          [class.bg-yellow-100]="waiting.status === 1"
-          [class.text-yellow-700]="waiting.status === 1"
-          [class.bg-red-100]="waiting.status === 3"
-          [class.text-red-700]="waiting.status === 3"
-        >
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium" [class.bg-blue-100]="waiting.status === 2"
+          [class.text-blue-700]="waiting.status === 2" [class.bg-yellow-100]="waiting.status === 1"
+          [class.text-yellow-700]="waiting.status === 1" [class.bg-red-100]="waiting.status === 3"
+          [class.text-red-700]="waiting.status === 3">
           {{ waitingStatusLabel(waiting.status) }}
         </span>
 
         @if (waiting.status === 1) {
-        <button
-          (click)="cancelWaiting(waiting)"
-          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
-        >
+        <button (click)="cancelWaiting(waiting)"
+          class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200">
           Leave list
         </button>
         }

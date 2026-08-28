@@ -41,6 +41,7 @@ export class Sessions implements OnInit {
   myCoachId = signal<number | null>(null);
 
   showCreateModal = signal(false);
+  isCreating = signal(false);
   createErrorMessage = signal<string | null>(null);
   pageErrorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
@@ -137,8 +138,11 @@ export class Sessions implements OnInit {
   }) {
     this.createErrorMessage.set(null);
     this.pageErrorMessage.set(null);
+    this.isCreating.set(true);
 
-    this.sessionService.createSession(newSession).subscribe({
+    this.sessionService.createSession(newSession).pipe(
+      finalize(() => this.isCreating.set(false))
+    ).subscribe({
       next: () => {
         this.successMessage.set('Session created successfully.');
         this.showCreateModal.set(false);

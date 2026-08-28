@@ -10,7 +10,6 @@ import { RoomService } from '../../../services/roomService.service';
 import { ReservationService } from '../../../services/reservationService.service';
 import { WaitingService } from '../../../services/waitingService.service';
 import { ClientService } from '../../../services/clientService.service';
-import { ReservationLifecycleService } from '../../../services/reservationLifecycleService.service';
 
 import { Reservation } from '../../../shared/models/reservation.model';
 import { Waiting } from '../../../shared/models/waiting.model';
@@ -25,6 +24,13 @@ type BookingsTab = 'reservations' | 'waitings';
 
 export type ReservationVM = Reservation & { session?: SessionVM };
 export type WaitingVM = Waiting & { session?: SessionVM; linkedReservation?: Reservation };
+
+/** How often (in seconds) to silently re-fetch while a reservation's client-side
+ *  countdown has hit zero but the backend hasn't caught up yet. The backend's
+ *  sessions:process-lifecycle command runs once a minute, so there's an inherent
+ *  gap between "countdown says 0" and "status is actually 3 in the DB" — this closes
+ *  that gap without a manual refresh, instead of displaying a fake "Expired" state. */
+const CATCHUP_POLL_SECONDS = 5;
 
 @Component({
   selector: 'app-client-reservations',
@@ -45,21 +51,19 @@ export class ClientReservations implements OnInit, OnDestroy {
   successMessage = signal<string | null>(null);
 
   sortedReservations = computed(() =>
-  [...this.reservations()].sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
-);
+    [...this.reservations()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+  );
 
-sortedWaitings = computed(() =>
-  [...this.waitings()].sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  )
-);
+  sortedWaitings = computed(() =>
+    [...this.waitings()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+  );
 
-  /** Ticks every second so the expiry countdown on pending reservations stays live. */
+  /** Ticks every second so the expiry countdown display stays live. Purely visual —
+   *  the backend's `sessions:process-lifecycle` scheduled command is what actually
+   *  expires reservations now, independent of whether this page is even open. */
   nowMs = signal(Date.now());
   private tickHandle?: ReturnType<typeof setInterval>;
-  private isCheckingExpiry = false;
+  private secondsSinceLastCatchupPoll = 0;
 
   categoryColor = categoryColor;
 
@@ -73,7 +77,6 @@ sortedWaitings = computed(() =>
     private clientService: ClientService,
     private router: Router,
     private route: ActivatedRoute,
-    private lifecycle: ReservationLifecycleService,
   ) {}
 
   ngOnInit(): void {
@@ -83,33 +86,9 @@ sortedWaitings = computed(() =>
       this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
     }
 
-    this.lifecycle.runCheck().finally(() => this.loadAll());
+    this.loadAll();
 
     this.tickHandle = setInterval(() => this.tick(), 1000);
-  }
-
-  private tick(): void {
-    this.nowMs.set(Date.now());
-    this.maybeTriggerExpiry();
-  }
-
-  /**
-   * The countdown itself is purely visual — it doesn't expire anything on its own.
-   * This is what actually calls the lifecycle service the moment a pending
-   * reservation's timer hits zero, so expiry + waiting-list promotion happen right
-   * away instead of waiting for the next page load.
-   */
-  private maybeTriggerExpiry(): void {
-    if (this.isCheckingExpiry) return;
-
-    const hasJustExpired = this.reservations().some((r) => r.status === 1 && this.remainingMs(r) === 0);
-    if (!hasJustExpired) return;
-
-    this.isCheckingExpiry = true;
-    this.lifecycle.runCheck().finally(() => {
-      this.isCheckingExpiry = false;
-      this.loadAll();
-    });
   }
 
   ngOnDestroy(): void {
@@ -118,10 +97,29 @@ sortedWaitings = computed(() =>
     }
   }
 
-  loadAll(): void {
+  private tick(): void {
+    this.nowMs.set(Date.now());
+
+    // A reservation whose countdown hit zero but is still status 1 means the backend
+    // hasn't processed it yet — poll quietly every few seconds until it does, so the
+    // status pill flips to "Cancelled" on its own instead of us showing "Expired".
+    const awaitingBackendCatchup = this.reservations().some((r) => r.status === 1 && this.remainingMs(r) === 0);
+    if (!awaitingBackendCatchup) {
+      this.secondsSinceLastCatchupPoll = 0;
+      return;
+    }
+
+    this.secondsSinceLastCatchupPoll++;
+    if (this.secondsSinceLastCatchupPoll >= CATCHUP_POLL_SECONDS) {
+      this.secondsSinceLastCatchupPoll = 0;
+      this.loadAll(false);
+    }
+  }
+
+  loadAll(showSpinner = true): void {
     this.pageErrorMessage.set(null);
     this.actionErrorMessage.set(null);
-    this.isLoading.set(true);
+    if (showSpinner) this.isLoading.set(true);
 
     forkJoin({
       sessions: this.sessionService.getSessions(),
@@ -132,7 +130,7 @@ sortedWaitings = computed(() =>
       waitings: this.waitingService.getWaitings(),
       clients: this.clientService.getClients(),
     })
-      .pipe(finalize(() => this.isLoading.set(false)))
+      .pipe(finalize(() => { if (showSpinner) this.isLoading.set(false); }))
       .subscribe({
         next: ({ sessions, coaches, persons, rooms, reservations, waitings, clients }) => {
           const clientId = resolveCurrentClient(clients);
@@ -182,8 +180,22 @@ sortedWaitings = computed(() =>
     this.activeTab.set(tab);
   }
 
-  reservationStatusLabel(status: number): string {
-    switch (status) {
+  // ---------- Status display ----------
+
+  /** The status to actually DISPLAY, as opposed to reservation.status straight from
+   *  the DB. Once the countdown hits zero, this optimistically reports 3 (cancelled)
+   *  immediately, even though the backend cron may take up to ~1 minute to actually
+   *  flip the row — the silent catch-up poll in tick() syncs the real value underneath,
+   *  this just avoids showing a stale "Pending payment" pill in the meantime. */
+  effectiveReservationStatus(reservation: ReservationVM): number {
+    if (reservation.status === 1 && this.remainingMs(reservation) === 0) {
+      return 3;
+    }
+    return reservation.status;
+  }
+
+  reservationStatusLabel(reservation: ReservationVM): string {
+    switch (this.effectiveReservationStatus(reservation)) {
       case 1:
         return 'Pending payment';
       case 2:

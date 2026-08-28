@@ -21,7 +21,9 @@ class Notification extends Model
         'isSeen'
     ];
 
-    // Relationship: each notification belongs to a person (client)
+    // Fixed: clientId here refers to Client.clientId (same convention as
+    // Reservation.clientId / Waiting.clientId), not Person.personId directly.
+    // The previous version pointed straight at Person using the wrong key.
     public function client()
     {
         return $this->belongsTo(Client::class, 'clientId', 'clientId');

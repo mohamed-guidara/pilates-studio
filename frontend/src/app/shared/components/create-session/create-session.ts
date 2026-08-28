@@ -14,6 +14,7 @@ import { SessionLevelPipe } from '../../../assets/session-level-pipe';
 export class CreateSession {
   @Input() show = signal(false);
   @Input() apiError = signal<string | null>(null);
+  @Input() isLoading = signal(false);
   @Input() coachOptions: { coachId: number; fullName: string }[] = [];
   @Input() rooms: Room[] = [];
   @Output() close = new EventEmitter<void>();

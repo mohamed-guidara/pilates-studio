@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -10,6 +10,8 @@ import { Waiting } from '../../models/waiting.model';
 import { Session } from '../../models/session.model';
 import { SessionLevelPipe } from '../../../assets/session-level-pipe';
 import { SessionCategoryPipe } from '../../../assets/session-category-pipe';
+import { isBookingClosed } from '../../utils/booking-window.util';
+import { getRemainingMs } from '../../utils/reservation-expiry.util';
 
 type SessionWithExtras = Session & { coachName?: string; roomNumber?: string; reservedCount?: number };
 
@@ -19,7 +21,7 @@ type SessionWithExtras = Session & { coachName?: string; roomNumber?: string; re
   imports: [CommonModule, SessionLevelPipe, SessionCategoryPipe],
   templateUrl: './sessionBooking.html',
 })
-export class SessionBookingModal implements OnChanges {
+export class SessionBookingModal implements OnChanges, OnDestroy {
   @Input() show = signal(false);
   @Input() session: SessionWithExtras | null = null;
   @Input() clientId: number | null = null;
@@ -34,11 +36,55 @@ export class SessionBookingModal implements OnChanges {
   /** This client's existing waiting-list entry for this session, if any (status 1 = waiting). */
   myWaiting = signal<Waiting | null>(null);
 
+  /** Ticks every second so an existing pending reservation's own 20-minute payment
+   *  countdown is enforced here too — previously this modal only checked whether the
+   *  backend still reported status 1, with no time-based cutoff of its own, so a
+   *  reservation could still be paid here well past its real expiry window if the
+   *  backend's scheduled command hadn't processed it yet. */
+  nowMs = signal(Date.now());
+  private tickHandle?: ReturnType<typeof setInterval>;
+  private lastCatchupCheckMs = 0;
+
   constructor(
     private reservationService: ReservationService,
     private waitingService: WaitingService,
     private router: Router,
-  ) {}
+  ) {
+    this.tickHandle = setInterval(() => this.tick(), 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.tickHandle) {
+      clearInterval(this.tickHandle);
+    }
+  }
+
+  private tick(): void {
+    this.nowMs.set(Date.now());
+
+    // If the reservation shown is stuck at status 1 with its countdown already at
+    // zero, the backend hasn't caught up yet — poll quietly every few seconds so this
+    // resolves on its own instead of leaving a payable-looking reservation on screen.
+    const reservation = this.myReservation();
+    if (!reservation || reservation.status !== 1 || this.pendingReservationRemainingMs() > 0) {
+      return;
+    }
+    if (!this.session || this.clientId === null) return;
+
+    const now = Date.now();
+    if (now - this.lastCatchupCheckMs < 5000) return;
+    this.lastCatchupCheckMs = now;
+    this.loadMyStatus(this.session.sessionId, this.clientId);
+  }
+
+  /** Milliseconds left on the existing pending reservation's 20-minute payment
+   *  window, using the same shared constant as the Reservations tab. 0 if there is
+   *  no pending reservation. */
+  pendingReservationRemainingMs(): number {
+    const reservation = this.myReservation();
+    if (!reservation) return 0;
+    return getRemainingMs(reservation.createdAt, this.nowMs());
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['session'] || !this.session) {
@@ -96,8 +142,17 @@ export class SessionBookingModal implements OnChanges {
     return (this.session.reservedCount ?? 0) >= this.session.places;
   }
 
+  /** Manual booking/waitlist-join is blocked within 2 hours of the session's start
+   *  (and, as a natural consequence, for any session that has already started). This
+   *  does NOT affect automatic waiting-list promotion, which continues right up to
+   *  session start — see ReservationLifecycleService. */
+  get bookingClosed(): boolean {
+    if (!this.session) return false;
+    return isBookingClosed(this.session);
+  }
+
   bookPlace(): void {
-    if (!this.session || this.clientId === null || this.isSubmitting()) return;
+    if (!this.session || this.clientId === null || this.isSubmitting() || this.bookingClosed) return;
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -119,7 +174,7 @@ export class SessionBookingModal implements OnChanges {
   }
 
   joinWaitingList(): void {
-    if (!this.session || this.clientId === null || this.isSubmitting()) return;
+    if (!this.session || this.clientId === null || this.isSubmitting() || this.bookingClosed) return;
 
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
@@ -153,7 +208,7 @@ export class SessionBookingModal implements OnChanges {
 
   goToPayment(): void {
     const reservation = this.myReservation();
-    if (reservation) {
+    if (reservation && this.pendingReservationRemainingMs() > 0) {
       this.router.navigate(['/payment', reservation.reservationId]);
     }
   }

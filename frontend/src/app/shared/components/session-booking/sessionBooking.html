@@ -41,14 +41,20 @@
       You're booked for this session.
     </div>
     } @else {
-    <div class="px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-200 text-sm text-yellow-700 flex items-center justify-between gap-3">
-      <span>You have a pending reservation — payment isn't complete yet.</span>
-      <button
-        (click)="goToPayment()"
-        class="cursor-pointer shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-yellow-600 text-white hover:bg-yellow-700"
-      >
-        Continue to payment
-      </button>
+    <div class="px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-200 text-sm text-yellow-700">
+      @if (pendingReservationRemainingMs() > 0) {
+      <div class="flex items-center justify-between gap-3">
+        <span>You have a pending reservation — payment isn't complete yet.</span>
+        <button
+          (click)="goToPayment()"
+          class="cursor-pointer shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg bg-yellow-600 text-white hover:bg-yellow-700"
+        >
+          Continue to payment
+        </button>
+      </div>
+      } @else {
+      <span>This reservation's payment window has ended — checking with the server, this will update shortly.</span>
+      }
     </div>
     }
     } @else if (myWaiting()) {
@@ -57,6 +63,10 @@
     </div>
     } @else if (clientId === null) {
     <!-- errorMessage above already explains why booking isn't available -->
+    } @else if (bookingClosed) {
+    <div class="px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 text-sm text-gray-600">
+      Bookings for this session are closed — this happens automatically 2 hours before it starts.
+    </div>
     } @else {
     <div class="flex gap-3">
       <button
