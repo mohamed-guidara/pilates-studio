@@ -12,7 +12,7 @@
  * what this file says. Keep them equal for a countdown that matches reality, but
  * mismatching them is a cosmetic bug, not a correctness one.
  */
-export const RESERVATION_EXPIRY_MS = 5 * 60 * 1000; // MUST match config('booking.reservation_expiry_minutes') on the backend
+export const RESERVATION_EXPIRY_MS = 20 * 60 * 1000; // MUST match config('booking.reservation_expiry_minutes') on the backend
 
 export function getRemainingMs(createdAt: string, nowMs: number = Date.now()): number {
   // Laravel returns the database timestamp without a timezone. Treat it as UTC,
