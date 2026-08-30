@@ -1,42 +1,87 @@
-<div class="min-h-screen flex flex-col bg-gray-50">
-  <!-- Hero Section -->
-  <section class="flex flex-col items-center justify-center text-center py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-    <h1 class="text-5xl font-extrabold mb-6">Welcome to Our Pilates Studio</h1>
-    <p class="text-lg md:text-xl mb-6 max-w-2xl">
-      Book your sessions easily, enjoy instant notifications, and stay connected with our studio.
+<div class="min-h-screen bg-white">
+
+  <header class="max-w-5xl mx-auto flex items-center justify-between px-6 py-5">
+    <span class="text-xl font-bold text-blue-600">Pilates Studio</span>
+    <a href="/login" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Log in</a>
+  </header>
+
+  <section class="max-w-5xl mx-auto px-6 pt-10 pb-16 text-center">
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-4">
+      Welcome to our Pilates Studio
+    </h1>
+    <p class="max-w-xl mx-auto text-gray-600 mb-8">
+      Book sessions around your schedule, get notified the instant a spot opens up, and always know exactly where to go.
     </p>
-    <div class="space-x-4">
-      <a href="/login" class="px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg shadow hover:bg-gray-100">
-        Login
+    <div class="flex items-center justify-center gap-3">
+      <a href="/register"
+        class="cursor-pointer inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+        Create an account
       </a>
-      <a href="/register" class="px-6 py-3 border border-white rounded-lg hover:bg-white hover:text-blue-600">
-        Register
+      <a href="/login"
+        class="cursor-pointer inline-flex items-center px-5 py-2.5 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-300 rounded-xl hover:bg-blue-200 transition-colors">
+        Log in
       </a>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section class="grid md:grid-cols-3 gap-8 px-6 py-16 bg-gray-100 text-center">
-    <div class="bg-white p-6 rounded-lg shadow">
-      <div class="text-blue-600 text-4xl mb-4">🧘</div>
-      <h3 class="text-xl font-semibold mb-2">Book Sessions</h3>
-      <p class="text-gray-600">Reserve your Pilates classes in just a few clicks.</p>
+  <section class="max-w-5xl mx-auto px-6 pb-16 grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+    <div class="bg-gray-50 rounded-xl border border-gray-200 p-6">
+      <div class="h-10 w-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+          <rect x="3.5" y="4.5" width="17" height="16" rx="2" />
+          <path d="M3.5 9.5h17" />
+          <path d="M8 3v3M16 3v3" />
+          <path d="M8.5 14l2 2 4-4" />
+        </svg>
+      </div>
+      <h2 class="font-semibold text-gray-800 mb-1">Book in seconds</h2>
+      <p class="text-sm text-gray-600">Pick a class, reserve your spot, done. No phone calls, no waiting for a callback.</p>
     </div>
-    <div class="bg-white p-6 rounded-lg shadow">
-      <div class="text-purple-600 text-4xl mb-4">🔔</div>
-      <h3 class="text-xl font-semibold mb-2">Instant Notifications</h3>
-      <p class="text-gray-600">Stay updated with real-time alerts and reminders.</p>
+
+    <div class="bg-gray-50 rounded-xl border border-gray-200 p-6">
+      <div class="h-10 w-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+      </div>
+      <h2 class="font-semibold text-gray-800 mb-1">Never miss an opening</h2>
+      <p class="text-sm text-gray-600">If a place frees up in a full class you're waiting on, you'll hear about it instantly.</p>
     </div>
-    <div class="bg-white p-6 rounded-lg shadow">
-      <div class="text-green-600 text-4xl mb-4">📍</div>
-      <h3 class="text-xl font-semibold mb-2">Our Location</h3>
-      <p class="text-gray-600">Find us easily and join our welcoming community.</p>
+
+    <div class="bg-gray-50 rounded-xl border border-gray-200 p-6">
+      <div class="h-10 w-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+          <path d="M12 21s7-6.5 7-11.5a7 7 0 1 0-14 0C5 14.5 12 21 12 21z" />
+          <circle cx="12" cy="9.5" r="2.5" />
+        </svg>
+      </div>
+      <h2 class="font-semibold text-gray-800 mb-1">Know exactly where to go</h2>
+      <p class="text-sm text-gray-600">Studio hours and location, clear from the start — no guessing on your first visit.</p>
+    </div>
+
+  </section>
+
+  <section class="max-w-5xl mx-auto px-6 pb-16">
+    <div class="bg-blue-50 rounded-xl border border-blue-200 p-8 text-center">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">Ready to begin?</h3>
+      <div class="flex items-center justify-center gap-3">
+        <a href="/register"
+          class="cursor-pointer inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
+          Create an account
+        </a>
+        <a href="/login"
+          class="cursor-pointer inline-flex items-center px-5 py-2.5 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-300 rounded-xl hover:bg-blue-200 transition-colors">
+          Log in
+        </a>
+      </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="bg-gray-900 text-white text-center py-6">
-    <p>&copy; 2026 Pilates Studio. All rights reserved.</p>
-    <p class="text-gray-400 mt-2">Sfax, Tunisia</p>
+  <footer class="max-w-5xl mx-auto px-6 py-6 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
+    <span>Pilates Studio</span>
+    <span>Located in Tunis</span>
   </footer>
+
 </div>
