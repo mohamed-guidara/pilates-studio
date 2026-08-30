@@ -10,6 +10,55 @@
 </div>
 } @else {
 
+<!-- Smart insights: your best time + recommended sessions. Hidden entirely until
+     there's enough confirmed history to say something meaningful. -->
+@if (clientProfile(); as profile) {
+<div class="mb-4 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 p-5">
+  <div class="flex items-center gap-2 mb-2">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-indigo-600">
+      <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+      <circle cx="12" cy="12" r="3.5" />
+    </svg>
+    <span class="text-sm font-semibold text-indigo-700">Your booking pattern</span>
+  </div>
+  <p class="text-sm text-gray-700">
+    You're used to book
+    @if (profile.bestCategory !== null) {
+    <span class="font-semibold">{{ profile.bestCategory | sessionCategory }}</span>
+    } sessions
+    @if (profile.bestTime) {
+    around <span class="font-semibold">{{ profile.bestTime }}</span>
+    }
+    @if (profile.bestCoachName) {
+    , usually with <span class="font-semibold">{{ profile.bestCoachName }}</span>
+    }.
+  </p>
+
+  @if (recommendedSessions().length > 0) {
+  <div class="mt-4 pt-4 border-t border-indigo-100">
+    <div class="text-xs font-medium text-indigo-600 uppercase tracking-wide mb-2">Recommended for you</div>
+    <div class="space-y-2">
+      @for (session of recommendedSessions(); track session.sessionId) {
+      <button
+        (click)="openBooking(session)"
+        class="cursor-pointer w-full text-left flex items-center justify-between gap-3 rounded-lg bg-white/70 hover:bg-white px-3 py-2 transition-colors"
+      >
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="h-2 w-2 rounded-full shrink-0" [style.background-color]="categoryColor(session.category).border"></span>
+          <span class="text-sm font-medium text-gray-800 truncate">{{ session.category | sessionCategory }}</span>
+          <span class="text-sm text-gray-500 shrink-0">
+            · {{ formatSessionDate(session.date) }} · {{ session.startTime | slice:0:5 }}
+          </span>
+        </div>
+        <span class="text-xs text-gray-500 shrink-0">{{ session.coachName ?? '—' }}</span>
+      </button>
+      }
+    </div>
+  </div>
+  }
+</div>
+}
+
 <div class="flex justify-end mb-4">
   <div class="flex items-center rounded-xl border border-gray-300 overflow-hidden text-sm">
     <button

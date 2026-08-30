@@ -264,7 +264,7 @@ export class ClientReservations implements OnInit, OnDestroy {
     // until WaitingService.updateWaiting()'s type includes it.
     this.waitingService
       .updateWaiting(waiting.waitingId, {
-        sessionId: waiting.sessionId,
+        sessionId: waiting.sessionId, 
         reservationId: waiting.reservationId as unknown as number,
         clientId: waiting.clientId,
         status: '3',

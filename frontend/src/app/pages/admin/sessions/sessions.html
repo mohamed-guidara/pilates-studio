@@ -1,3 +1,59 @@
+@if (!isLoading() && (rushHourInsights().length > 0 || coachWorkload().length > 0)) {
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+  @if (rushHourInsights().length > 0) {
+  <div class="rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50 p-5">
+    <div class="flex items-center gap-2 mb-3">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-indigo-600">
+        <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+        <circle cx="12" cy="12" r="3.5" />
+      </svg>
+      <span class="text-sm font-semibold text-indigo-700">Predicted rush hours — this month</span>
+    </div>
+
+    <div class="space-y-2">
+      @for (insight of rushHourInsights(); track insight.hour) {
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-medium text-gray-700 w-14 shrink-0">{{ insight.label }}</span>
+        <div class="flex-1 h-2 rounded-full bg-white/70 overflow-hidden">
+          <div class="h-full bg-indigo-500 rounded-full" [style.width.%]="insight.percentage"></div>
+        </div>
+        <span class="text-xs text-gray-500 w-20 text-right shrink-0">{{ insight.count }} bookings</span>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  @if (coachWorkload().length > 0) {
+  <div class="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5">
+    <div class="flex items-center gap-2 mb-3">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-amber-600">
+        <path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+        <circle cx="12" cy="12" r="3.5" />
+      </svg>
+      <span class="text-sm font-semibold text-amber-700">Coach workload — next 7 days</span>
+    </div>
+
+    <div class="space-y-2">
+      @for (coach of coachWorkload(); track coach.coachId; let first = $first) {
+      <div class="flex items-center justify-between gap-3 text-sm">
+        <span class="font-medium text-gray-700 truncate">
+          {{ coach.name }}
+          @if (first) {
+          <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-200 text-amber-800 align-middle">Busiest</span>
+          }
+        </span>
+        <span class="text-gray-500 shrink-0">{{ coach.count }} sessions</span>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+</div>
+}
+
 <div class="relative overflow-hidden bg-gray-50 shadow rounded-xl border border-gray-200">
   @if (pageErrorMessage()) {
   <div class="p-5">
